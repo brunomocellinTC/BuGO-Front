@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #0f172a;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.16), transparent 30%),
+    linear-gradient(180deg, #020617 0%, #0f172a 100%);
+  font-family: "Segoe UI Variable", "Bahnschrift", "Trebuchet MS", sans-serif;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.theme-bug {
+  background:
+    radial-gradient(circle at 15% 20%, rgba(239, 68, 68, 0.3), transparent 28%),
+    radial-gradient(circle at 80% 10%, rgba(190, 24, 93, 0.18), transparent 24%),
+    linear-gradient(180deg, #220a0a 0%, #0f172a 60%, #020617 100%);
+}
+
+.theme-improvement {
+  background:
+    radial-gradient(circle at 15% 20%, rgba(14, 165, 233, 0.32), transparent 28%),
+    radial-gradient(circle at 80% 10%, rgba(59, 130, 246, 0.24), transparent 24%),
+    linear-gradient(180deg, #07192b 0%, #0f172a 60%, #020617 100%);
+}
+
+.theme-task {
+  background:
+    radial-gradient(circle at 15% 20%, rgba(250, 204, 21, 0.34), transparent 28%),
+    radial-gradient(circle at 80% 10%, rgba(245, 158, 11, 0.22), transparent 24%),
+    linear-gradient(180deg, #2b2107 0%, #0f172a 62%, #020617 100%);
+}
+
+@layer components {
+  .input-base {
+    @apply w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100;
+  }
+
+  .input-inline {
+    @apply min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100;
+  }
+}
