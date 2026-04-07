@@ -86,6 +86,8 @@ function WorkItemCreatorPage() {
                 getSystemInfoVersion={handlers.getSystemInfoVersion}
                 getSystemInfoDetail={handlers.getSystemInfoDetail}
                 saveSystemInfo={handlers.saveSystemInfo}
+                showValidationErrors={state.showValidationErrors}
+                systemInfo={state.systemInfo}
               />
 
               <button
@@ -134,6 +136,7 @@ function WorkItemCreatorPage() {
 }
 
 export default WorkItemCreatorPage;
+
 
 
 

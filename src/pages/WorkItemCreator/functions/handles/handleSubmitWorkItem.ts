@@ -1,4 +1,4 @@
-import type { Dispatch, FormEvent, SetStateAction } from "react";
+﻿import type { Dispatch, FormEvent, SetStateAction } from "react";
 import { FRONTEND_ONLY_SUBMIT } from "../utils/frontendOnlySubmit";
 import { postWorkItem } from "../api/postWorkItem";
 import { AttachmentDraft, SubmitResponse, SystemInfoItem, WorkItemKind } from "../../types/workItemCreatorTypes";
@@ -37,6 +37,32 @@ export async function handleSubmitWorkItem(
   setShowValidationErrors(true);
 
   if (!(event.currentTarget as HTMLFormElement).reportValidity()) {
+    return;
+  }
+
+  const hasAnyStep = steps.some((step) => step.trim().length > 0);
+  const hasSystemInfo = systemInfo.length > 0;
+  const hasAnyCriteria = (formValues.acceptanceCriteria ?? "")
+    .split(/\r?\n/)
+    .some((criterion) => criterion.replace(/^\s*\d+\.\s*/, "").trim().length > 0);
+
+  if (kind === "bug" && (!hasAnyStep || !hasSystemInfo)) {
+    const missing: string[] = [];
+
+    if (!hasAnyStep) {
+      missing.push("ao menos 1 step");
+    }
+
+    if (!hasSystemInfo) {
+      missing.push("ao menos 1 item em System Info");
+    }
+
+    setError(`Bug requer ${missing.join(", ")}.`);
+    return;
+  }
+
+  if (kind === "issue" && !hasAnyCriteria) {
+    setError("PBI requer ao menos 1 criterio de aceite.");
     return;
   }
 

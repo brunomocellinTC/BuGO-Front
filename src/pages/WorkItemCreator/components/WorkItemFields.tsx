@@ -1,6 +1,6 @@
 ﻿import type { ChangeEvent, MutableRefObject } from "react";
 import InfoPopover from "./InfoPopover";
-import { AttachmentDraft, FormConfigResponse, FormField, WorkItemKind } from "../types/workItemCreatorTypes";
+import { AttachmentDraft, FormConfigResponse, FormField, SystemInfoItem, WorkItemKind } from "../types/workItemCreatorTypes";
 
 type WorkItemFieldsProps = {
   kind: WorkItemKind;
@@ -9,6 +9,8 @@ type WorkItemFieldsProps = {
   formValues: Record<string, string>;
   steps: string[];
   attachments: AttachmentDraft[];
+  systemInfo: SystemInfoItem[];
+  showValidationErrors: boolean;
   activeButtonBackground: string;
   stepInputRefs: MutableRefObject<Array<HTMLInputElement | null>>;
   isFieldInvalid: (fieldId: string, required?: boolean) => boolean;
@@ -34,6 +36,8 @@ function WorkItemFields({
   formValues,
   steps,
   attachments,
+  systemInfo,
+  showValidationErrors,
   activeButtonBackground,
   stepInputRefs,
   isFieldInvalid,
@@ -63,15 +67,22 @@ function WorkItemFields({
     const value = formValues[field.id] ?? "";
     const isTextarea = field.type === "textarea";
     const spanTwoColumns = options?.spanTwoColumns ?? isTextarea;
-    const fieldLabel = options?.label ?? field.label; 
+    const fieldLabel = options?.label ?? field.label;
     const popover = options?.popover;
     const invalidClass = isFieldInvalid(field.id, field.required)
       ? "border-red-400 bg-red-50 text-red-950 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100"
       : "";
 
+    const bugStepsInvalid =
+      kind === "bug" && showValidationErrors && field.type === "steps" && !steps.some((step) => step.trim());
+    const bugSystemInfoInvalid =
+      kind === "bug" && showValidationErrors && field.type === "systemInfo" && systemInfo.length === 0;
+    const bugMediaInvalid =
+      kind === "bug" && showValidationErrors && field.type === "media" && attachments.length === 0;
+
     if (field.type === "steps") {
       return (
-        <div key={field.id} className={`grid h-full gap-2 content-start ${spanTwoColumns ? "xl:col-span-2" : ""}`}>
+        <div key={field.id} className={`grid h-full gap-2 content-start ${spanTwoColumns ? "xl:col-span-2" : ""} ${bugStepsInvalid ? "rounded-2xl border border-red-400/70 p-2" : ""}`}>
           <div className="flex items-center justify-between gap-2">
             <span className="text-sm font-semibold text-white">{fieldLabel}</span>
             <InfoPopover
@@ -105,7 +116,7 @@ function WorkItemFields({
                 <button
                   type="button"
                   onClick={() => removeStep(index)}
-                  className="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                  className="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-50"
                 >
                   -
                 </button>
@@ -129,6 +140,8 @@ function WorkItemFields({
         ? rawLines.map((line) => line.replace(/^\s*\d+\.\s*/, ""))
         : [""];
 
+      const issueCriteriaInvalid = kind === "issue" && showValidationErrors && !criteriaList.some((line) => line.replace(/^\s*\d+\.\s*/, "").trim());
+
       const updateCriteria = (index: number, nextValue: string) => {
         const draft = [...criteriaList];
         draft[index] = nextValue;
@@ -146,7 +159,7 @@ function WorkItemFields({
       };
 
       return (
-        <div key={field.id} className={`grid h-full gap-2 content-start ${spanTwoColumns ? "xl:col-span-2" : ""}`}>
+        <div key={field.id} className={`grid h-full gap-2 content-start ${spanTwoColumns ? "xl:col-span-2" : ""} ${issueCriteriaInvalid ? "rounded-2xl border border-red-400/70 p-2" : ""}`}>
           <div className="flex items-center justify-between gap-2">
             <span className="text-sm font-semibold text-white">{fieldLabel}{field.required ? " *" : ""}</span>
             {popover ? (
@@ -176,7 +189,7 @@ function WorkItemFields({
                 <button
                   type="button"
                   onClick={() => removeCriteria(index)}
-                  className="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                  className="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-50"
                 >
                   -
                 </button>
@@ -194,10 +207,11 @@ function WorkItemFields({
         </div>
       );
     }
+
     if (field.type === "media") {
       const uploadPanelClass = kind === "bug" ? "min-h-[196px]" : "";
       return (
-        <div key={field.id} className={`grid gap-2 ${spanTwoColumns ? "xl:col-span-2" : ""}`}>
+        <div key={field.id} className={`grid gap-2 ${spanTwoColumns ? "xl:col-span-2" : ""} ${bugMediaInvalid ? "rounded-2xl border border-red-400/70 p-2" : ""}`}>
           <span className="text-sm font-semibold text-white">{fieldLabel}</span>
           <div className={`flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 ${uploadPanelClass}`}>
             <div className="flex flex-col gap-3 xl:flex-row xl:items-start">
@@ -257,7 +271,7 @@ function WorkItemFields({
 
     if (field.type === "systemInfo") {
       return (
-        <div key={field.id} className={`grid gap-2 ${spanTwoColumns ? "xl:col-span-2" : ""}`}>
+        <div key={field.id} className={`grid gap-2 ${spanTwoColumns ? "xl:col-span-2" : ""} ${bugSystemInfoInvalid ? "rounded-2xl border border-red-400/70 p-2" : ""}`}>
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm font-semibold text-white">{fieldLabel}</span>
             <button
@@ -524,16 +538,5 @@ function WorkItemFields({
 }
 
 export default WorkItemFields;
-
-
-
-
-
-
-
-
-
-
-
 
 
