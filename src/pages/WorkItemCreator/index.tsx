@@ -1,4 +1,4 @@
-import FeedbackMessage from "./components/FeedbackMessage";
+﻿import FeedbackMessage from "./components/FeedbackMessage";
 import HierarchySection from "./components/HierarchySection";
 import TypeSelectorSidebar from "./components/TypeSelectorSidebar";
 import WorkItemFields from "./components/WorkItemFields";
@@ -106,7 +106,7 @@ function WorkItemCreatorPage() {
                   event.currentTarget.style.color = "#ffffff";
                 }}
               >
-                {state.isSubmitting ? "Creating..." : `Create ${state.kind}`}
+                {state.isSubmitting ? "Creating..." : `Create ${state.kind === "issue" ? "PBI" : state.kind === "bug" ? "bug" : "task"}`}
               </button>
             </form>
 
@@ -134,6 +134,7 @@ function WorkItemCreatorPage() {
 }
 
 export default WorkItemCreatorPage;
+
 
 
 

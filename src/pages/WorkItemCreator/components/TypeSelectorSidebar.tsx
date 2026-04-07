@@ -1,4 +1,4 @@
-import { themeMap } from "../constants/workItemCreatorTheme";
+﻿import { themeMap } from "../constants/workItemCreatorTheme";
 import { buildFullTitle } from "../functions/utils/buildFullTitle";
 import { formatBrowserPreview } from "../functions/utils/formatBrowserPreview";
 import { formatMobilePreview } from "../functions/utils/formatMobilePreview";
@@ -23,6 +23,22 @@ type TypeSelectorSidebarProps = {
   attachments: AttachmentDraft[];
   onSelectKind: (kind: WorkItemKind) => void;
 };
+
+function splitBddStep(step: string) {
+  const trimmed = step.trim();
+  const match = trimmed.match(/^(Quando|E|Ent[aã]o)\b\s*(.*)$/i);
+
+  if (!match) {
+    return null;
+  }
+
+  const keywordRaw = match[1].toLowerCase();
+  const keyword = keywordRaw.startsWith("ent") ? "Então" : keywordRaw === "e" ? "E" : "Quando";
+  return {
+    keyword,
+    content: match[2]
+  };
+}
 
 function TypeSelectorSidebar({
   config,
@@ -54,26 +70,25 @@ function TypeSelectorSidebar({
       <h1 className="mt-2 text-2xl font-semibold tracking-tight text-white">{config.title}</h1>
       <p className="mt-2 text-sm leading-6 text-slate-300">{config.basePath}</p>
 
-      <div className="mt-4 grid gap-2">
-        {config.kinds.map((item) => {
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        {config.kinds.filter((item) => item.id !== "task").map((item) => {
           const isActive = item.id === kind;
-
+          const displayLabel = item.id === "issue" ? "PBI" : item.label;
           return (
             <button
               key={item.id}
               type="button"
               onClick={() => onSelectKind(item.id)}
-              className={`rounded-2xl border px-3 py-3 text-left transition ${
-                isActive
-                  ? "border-white/40 bg-white/10 shadow-lg"
+              className={`rounded-2xl border px-3 py-3 text-left transition ${isActive
+                  ? item.id === "bug"
+                    ? "border-red-400 bg-white/10 shadow-lg"
+                    : "border-sky-400 bg-white/10 shadow-lg"
                   : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
-              }`}
+                }`}
             >
               <span className={`inline-flex rounded-full border px-3 py-1 text-xs uppercase tracking-[0.3em] ${isActive ? activeTheme.badge : "border-white/10 bg-white/5 text-slate-300"}`}>
-                {item.label}
-              </span>
-              <p className="mt-2 text-sm font-semibold text-white">{item.workItemType}</p>
-              <p className="mt-1 text-xs leading-5 text-slate-300">
+                {displayLabel}
+              </span>              <p className="mt-1 text-xs leading-5 text-slate-300">
                 {item.id === "bug"
                   ? "Falha com passos, severidade e system info."
                   : item.id === "issue"
@@ -85,6 +100,7 @@ function TypeSelectorSidebar({
         })}
       </div>
 
+
       <div className="mt-4 rounded-3xl border border-white/10 bg-white/5 p-4">
         <p className="text-[11px] uppercase tracking-[0.3em] text-slate-400">Preview</p>
         <p className="mt-2 text-base font-medium text-white">{fullTitle || "[TAG] Titulo do card"}</p>
@@ -94,7 +110,7 @@ function TypeSelectorSidebar({
             <p className="mt-1 whitespace-pre-wrap leading-6">{description || "-"}</p>
             {imageAttachments.length > 0 ? (
               <div className="mt-3">
-                <p>----------------</p>
+                <p>-- Anexos --</p>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
                   {imageAttachments.map((attachment) =>
                     attachment.previewUrl ? (
@@ -115,9 +131,15 @@ function TypeSelectorSidebar({
             <div>
               <p className="text-[11px] uppercase tracking-[0.25em] text-slate-400">Steps *</p>
               <div className="mt-1 space-y-1">
-                {steps.filter((step) => step.trim()).map((step, index) => (
-                  <p key={`${step}-${index}`}>{index + 1}. {step}</p>
-                ))}
+                {steps.filter((step) => step.trim()).map((step, index) => {
+                  const bdd = splitBddStep(step);
+
+                  return (
+                    <p key={`${step}-${index}`}>
+                      {index + 1}. {bdd ? <><strong>{bdd.keyword}</strong>{bdd.content ? ` ${bdd.content}` : ""}</> : step}
+                    </p>
+                  );
+                })}
               </div>
             </div>
           ) : null}
@@ -129,17 +151,14 @@ function TypeSelectorSidebar({
                 <div>
                   <p>---- OS ----</p>
                   <p>{osPreview || "-"}</p>
-                  <p>-------------</p>
                 </div>
                 <div>
                   <p>---- Browsers ----</p>
                   <p>{browserPreview || "-"}</p>
-                  <p>--------------------</p>
                 </div>
                 <div>
                   <p>---- Mobile ----</p>
                   <p>{mobilePreview || "-"}</p>
-                  <p>----------------</p>
                 </div>
               </div>
             </div>
@@ -148,7 +167,21 @@ function TypeSelectorSidebar({
           {kind === "issue" && acceptanceCriteria ? (
             <div>
               <p className="text-[11px] uppercase tracking-[0.25em] text-slate-400">Acceptance Criteria</p>
-              <p className="mt-1 whitespace-pre-wrap leading-6">{acceptanceCriteria}</p>
+              <div className="mt-1 space-y-1">
+                {acceptanceCriteria
+                  .split(/\r?\n/)
+                  .map((line) => line.replace(/^\s*\d+\.\s*/, "").trim())
+                  .filter(Boolean)
+                  .map((criterion, index) => {
+                    const bdd = splitBddStep(criterion);
+
+                    return (
+                      <p key={`${criterion}-${index}`}>
+                        {index + 1}. {bdd ? <><strong>{bdd.keyword}</strong>{bdd.content ? ` ${bdd.content}` : ""}</> : criterion}
+                      </p>
+                    );
+                  })}
+              </div>
             </div>
           ) : null}
 
@@ -191,3 +224,7 @@ function TypeSelectorSidebar({
 }
 
 export default TypeSelectorSidebar;
+
+
+
+

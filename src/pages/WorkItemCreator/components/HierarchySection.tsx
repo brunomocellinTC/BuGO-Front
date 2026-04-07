@@ -1,4 +1,4 @@
-import { AzureEpic, WorkItemKind } from "../types/workItemCreatorTypes";
+﻿import { AzureEpic, WorkItemKind } from "../types/workItemCreatorTypes";
 
 type HierarchySectionProps = {
   kind: WorkItemKind;
@@ -46,11 +46,15 @@ function HierarchySection({
             onChange={(event) => void onEpicChange(event.target.value)}
             className={`input-base ${isFieldInvalid("epicId", true) ? "border-red-400 bg-red-50 text-red-950 focus:border-red-500 focus:ring-red-100" : ""}`}
           >
-            {syncData?.epics.map((epic) => (
-              <option key={epic.id} value={epic.id}>
-                #{epic.id} {epic.title}
-              </option>
-            ))}
+            {syncData?.epics.map((epic) => {
+              const epicEmoji = "\uD83D\uDC51";
+
+              return (
+                <option key={epic.id} value={epic.id}>
+                  {epicEmoji} {epic.title}
+                </option>
+              );
+            })}
           </select>
         </label>
 
@@ -64,7 +68,7 @@ function HierarchySection({
           >
             {selectedEpic?.features.map((feature) => (
               <option key={feature.id} value={feature.id}>
-                #{feature.id} [{feature.workItemType}] {feature.title}
+                {"\uD83C\uDFC6"} {feature.title}
               </option>
             ))}
           </select>
@@ -117,3 +121,6 @@ function HierarchySection({
 }
 
 export default HierarchySection;
+
+
+

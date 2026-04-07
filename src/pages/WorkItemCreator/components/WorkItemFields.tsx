@@ -1,4 +1,5 @@
-import type { ChangeEvent, MutableRefObject } from "react";
+﻿import type { ChangeEvent, MutableRefObject } from "react";
+import InfoPopover from "./InfoPopover";
 import { AttachmentDraft, FormConfigResponse, FormField, WorkItemKind } from "../types/workItemCreatorTypes";
 
 type WorkItemFieldsProps = {
@@ -50,11 +51,20 @@ function WorkItemFields({
   getSystemInfoDetail,
   saveSystemInfo
 }: WorkItemFieldsProps) {
-  function renderGenericField(field: FormField, options?: { spanTwoColumns?: boolean; label?: string }) {
+  function renderGenericField(field: FormField, options?: {
+    spanTwoColumns?: boolean;
+    label?: string;
+    popover?: {
+      title: string;
+      items: Array<{ keyword?: string; text: string }>;
+      useBddTrigger?: boolean;
+    };
+  }) {
     const value = formValues[field.id] ?? "";
     const isTextarea = field.type === "textarea";
     const spanTwoColumns = options?.spanTwoColumns ?? isTextarea;
-    const fieldLabel = options?.label ?? field.label;
+    const fieldLabel = options?.label ?? field.label; 
+    const popover = options?.popover;
     const invalidClass = isFieldInvalid(field.id, field.required)
       ? "border-red-400 bg-red-50 text-red-950 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100"
       : "";
@@ -62,7 +72,23 @@ function WorkItemFields({
     if (field.type === "steps") {
       return (
         <div key={field.id} className={`grid h-full gap-2 content-start ${spanTwoColumns ? "xl:col-span-2" : ""}`}>
-          <span className="text-sm font-semibold text-white">{fieldLabel}</span>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm font-semibold text-white">{fieldLabel}</span>
+            <InfoPopover
+              title="Padrao BDD para Steps"
+              triggerText="BDD"
+              triggerIconUrl="https://cucumber.io/img/logo.svg"
+              align="right"
+              triggerClassName="inline-flex items-center gap-1 text-[12px] font-semibold text-white transition hover:text-slate-200"
+              items={[
+                { keyword: "Quando", text: "entro no 'link'" },
+                { keyword: "E", text: "a home aparece" },
+                { keyword: "E", text: "clico no botao 'login'" },
+                { keyword: "E", text: "valido meu perfil" },
+                { keyword: "Então", text: "vejo o Dashboard" }
+              ]}
+            />
+          </div>
           <div className="grid content-start gap-2">
             {steps.map((step, index) => (
               <div key={`${field.id}-${index}`} className="flex gap-2">
@@ -97,6 +123,77 @@ function WorkItemFields({
       );
     }
 
+    if (field.id === "acceptanceCriteria") {
+      const rawLines = value.split(/\r?\n/);
+      const criteriaList = rawLines.length > 0
+        ? rawLines.map((line) => line.replace(/^\s*\d+\.\s*/, ""))
+        : [""];
+
+      const updateCriteria = (index: number, nextValue: string) => {
+        const draft = [...criteriaList];
+        draft[index] = nextValue;
+        updateField(field.id, draft.join("\n"));
+      };
+
+      const addCriteria = () => {
+        const draft = [...criteriaList, ""];
+        updateField(field.id, draft.join("\n"));
+      };
+
+      const removeCriteria = (index: number) => {
+        const draft = criteriaList.filter((_, currentIndex) => currentIndex !== index);
+        updateField(field.id, draft.length > 0 ? draft.join("\n") : "");
+      };
+
+      return (
+        <div key={field.id} className={`grid h-full gap-2 content-start ${spanTwoColumns ? "xl:col-span-2" : ""}`}>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm font-semibold text-white">{fieldLabel}{field.required ? " *" : ""}</span>
+            {popover ? (
+              <InfoPopover
+                title={popover.title}
+                align="right"
+                triggerText={popover.useBddTrigger ? "BDD" : ""}
+                triggerIconUrl={popover.useBddTrigger ? "https://cucumber.io/img/logo.svg" : undefined}
+                triggerClassName={popover.useBddTrigger
+                  ? "inline-flex items-center gap-1 text-[12px] font-semibold text-white transition hover:text-slate-200"
+                  : "inline-flex h-5 w-5 items-center justify-center rounded-full border border-white/30 text-[11px] font-semibold text-white transition hover:bg-white/10"}
+                items={popover.items}
+              />
+            ) : null}
+          </div>
+
+          <div className="grid content-start gap-2">
+            {criteriaList.map((criterion, index) => (
+              <div key={`${field.id}-${index}`} className="flex gap-2">
+                <input
+                  type="text"
+                  value={criterion}
+                  placeholder={`Criterio ${index + 1}`}
+                  onChange={(event) => updateCriteria(index, event.target.value)}
+                  className={`input-base ${invalidClass}`}
+                />
+                <button
+                  type="button"
+                  onClick={() => removeCriteria(index)}
+                  className="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  -
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={addCriteria}
+            className="inline-flex w-fit items-center justify-center rounded-2xl border border-dashed border-slate-300 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/10"
+          >
+            + Adicionar criterio
+          </button>
+        </div>
+      );
+    }
     if (field.type === "media") {
       const uploadPanelClass = kind === "bug" ? "min-h-[196px]" : "";
       return (
@@ -206,7 +303,7 @@ function WorkItemFields({
               </div>
 
               <div className="grid gap-2">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-slate-950">Desktop OS</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-slate-950">Sistema</p>
                 {config.desktopPlatforms.map((option) => {
                   const checked = isSystemInfoSelected("desktop", option.value);
 
@@ -289,10 +386,24 @@ function WorkItemFields({
 
     return (
       <label key={field.id} className={`grid h-full gap-2 content-start ${spanTwoColumns ? "xl:col-span-2" : ""}`}>
-        <span className="text-sm font-semibold text-white">
-          {fieldLabel}
-          {field.required ? " *" : ""}
-        </span>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-sm font-semibold text-white">
+            {fieldLabel}
+            {field.required ? " *" : ""}
+          </span>
+          {popover ? (
+            <InfoPopover
+              title={popover.title}
+              align="right"
+              triggerText={popover.useBddTrigger ? "BDD" : ""}
+              triggerIconUrl={popover.useBddTrigger ? "https://cucumber.io/img/logo.svg" : undefined}
+              triggerClassName={popover.useBddTrigger
+                ? "inline-flex items-center gap-1 text-[12px] font-semibold text-white transition hover:text-slate-200"
+                : "inline-flex h-5 w-5 items-center justify-center rounded-full border border-white/30 text-[11px] font-semibold text-white transition hover:bg-white/10"}
+              items={popover.items}
+            />
+          ) : null}
+        </div>
         {field.type === "select" ? (
           <select
             required={field.required}
@@ -370,8 +481,33 @@ function WorkItemFields({
           {priorityField ? renderGenericField(priorityField) : null}
           {valueAreaField ? renderGenericField(valueAreaField) : null}
           <div className="grid items-start gap-3 xl:col-span-2 xl:grid-cols-2">
-            {descriptionField ? renderGenericField(descriptionField, { spanTwoColumns: false }) : null}
-            {acceptanceCriteriaField ? renderGenericField(acceptanceCriteriaField, { spanTwoColumns: false }) : null}
+            {descriptionField ? renderGenericField(descriptionField, {
+              spanTwoColumns: false,
+              popover: {
+                title: "Padrao para Description",
+                items: [
+                  { text: "Contexto: colaboradores nao conseguem concluir o login em determinados cenarios." },
+                  { text: "Problema: o sistema retorna a tela inicial sem feedback claro para o usuario." },
+                  { text: "Impacto: aumento de retrabalho no suporte e atraso no fluxo operacional." },
+                  { text: "Escopo: ajustar validacoes e mensagens apenas na etapa de autenticacao." },
+                  { text: "Resultado esperado: login previsivel, com mensagem objetiva em caso de falha." }
+                ]
+              }
+            }) : null}
+            {acceptanceCriteriaField ? renderGenericField(acceptanceCriteriaField, {
+              spanTwoColumns: false,
+              popover: {
+                title: "Padrao para Acceptance Criteria",
+                useBddTrigger: true,
+                items: [
+                  { keyword: "Quando", text: "o usuario informar credenciais validas e confirmar o login" },
+                  { keyword: "Então", text: "o sistema deve redirecionar para o Dashboard em ate 2 segundos" },
+                  { keyword: "E", text: "o nome do usuario autenticado deve aparecer no cabecalho" },
+                  { keyword: "Quando", text: "as credenciais estiverem invalidas" },
+                  { keyword: "Então", text: "deve exibir mensagem clara sem limpar os campos preenchidos" }
+                ]
+              }
+            }) : null}
           </div>
           {mediaField ? renderGenericField(mediaField) : null}
         </>
@@ -388,6 +524,15 @@ function WorkItemFields({
 }
 
 export default WorkItemFields;
+
+
+
+
+
+
+
+
+
 
 
 
