@@ -1,6 +1,7 @@
-﻿import type { Dispatch, FormEvent, SetStateAction } from "react";
-import { FRONTEND_ONLY_SUBMIT } from "../utils/frontendOnlySubmit";
+import type { Dispatch, FormEvent, SetStateAction } from "react";
+
 import { postWorkItem } from "../api/postWorkItem";
+import { FRONTEND_ONLY_SUBMIT } from "../utils/frontendOnlySubmit";
 import { AttachmentDraft, SubmitResponse, SystemInfoItem, WorkItemKind } from "../../types/workItemCreatorTypes";
 
 type SubmitDependencies = {
@@ -14,6 +15,26 @@ type SubmitDependencies = {
   setShowValidationErrors: Dispatch<SetStateAction<boolean>>;
   setIsSubmitting: Dispatch<SetStateAction<boolean>>;
 };
+
+function getMissingBaseFields(kind: WorkItemKind, formValues: Record<string, string>) {
+  const requiredFields: Array<{ id: string; label: string }> = [
+    { id: "epicId", label: "Epic" },
+    { id: "featureId", label: "Feature" },
+    { id: "titleTag", label: "Tag" },
+    { id: "titleText", label: "Titulo" },
+    { id: "madeBy", label: "Made By" },
+    { id: "description", label: "Description" },
+    { id: "requesterName", label: "Nome" }
+  ];
+
+  if (kind === "task") {
+    requiredFields.push({ id: "parentId", label: "Parent item" });
+  }
+
+  return requiredFields
+    .filter((field) => !(formValues[field.id] ?? "").trim())
+    .map((field) => field.label);
+}
 
 export async function handleSubmitWorkItem(
   event: FormEvent<HTMLFormElement>,
@@ -36,7 +57,10 @@ export async function handleSubmitWorkItem(
   setResult(null);
   setShowValidationErrors(true);
 
-  if (!(event.currentTarget as HTMLFormElement).reportValidity()) {
+  const missingBaseFields = getMissingBaseFields(kind, formValues);
+
+  if (missingBaseFields.length > 0) {
+    setError(`Preencha os campos obrigatorios: ${missingBaseFields.join(", ")}.`);
     return;
   }
 
@@ -50,19 +74,19 @@ export async function handleSubmitWorkItem(
     const missing: string[] = [];
 
     if (!hasAnyStep) {
-      missing.push("ao menos 1 step");
+      missing.push("Steps");
     }
 
     if (!hasSystemInfo) {
-      missing.push("ao menos 1 item em System Info");
+      missing.push("System Info");
     }
 
-    setError(`Bug requer ${missing.join(", ")}.`);
+    setError(`Bug requer preenchimento de: ${missing.join(", ")}.`);
     return;
   }
 
   if (kind === "issue" && !hasAnyCriteria) {
-    setError("PBI requer ao menos 1 criterio de aceite.");
+    setError("PBI requer ao menos 1 criterio em Acceptance Criteria.");
     return;
   }
 
@@ -92,7 +116,7 @@ export async function handleSubmitWorkItem(
     const data = await postWorkItem(payload);
     setResult(data);
   } catch (submitError) {
-    const message = submitError instanceof Error ? submitError.message : "Submit failed";
+    const message = submitError instanceof Error ? submitError.message : "Falha ao enviar card";
     setError(message);
   } finally {
     setIsSubmitting(false);

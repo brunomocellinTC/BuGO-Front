@@ -97,3 +97,10 @@ export type SystemInfoItem = {
   detail: string;
   version: string;
 };
+
+export type AzureAuthCheckResponse = {
+  ok: boolean;
+  organization: string;
+  project: string;
+  checkedAt: string;
+};

@@ -1,4 +1,4 @@
-Ôªøimport { themeMap } from "../constants/workItemCreatorTheme";
+import { themeMap } from "../constants/workItemCreatorTheme";
 import { buildFullTitle } from "../functions/utils/buildFullTitle";
 import { formatBrowserPreview } from "../functions/utils/formatBrowserPreview";
 import { formatMobilePreview } from "../functions/utils/formatMobilePreview";
@@ -22,18 +22,20 @@ type TypeSelectorSidebarProps = {
   systemInfo: SystemInfoItem[];
   attachments: AttachmentDraft[];
   onSelectKind: (kind: WorkItemKind) => void;
+  onCheckAzureAuth: () => void;
+  isCheckingAzureAuth: boolean;
 };
 
 function splitBddStep(step: string) {
   const trimmed = step.trim();
-  const match = trimmed.match(/^(Quando|E|Ent[a√£]o)\b\s*(.*)$/i);
+  const match = trimmed.match(/^(Quando|E|Ent[a„]o)\b\s*(.*)$/i);
 
   if (!match) {
     return null;
   }
 
   const keywordRaw = match[1].toLowerCase();
-  const keyword = keywordRaw.startsWith("ent") ? "Ent√£o" : keywordRaw === "e" ? "E" : "Quando";
+  const keyword = keywordRaw.startsWith("ent") ? "Ent„o" : keywordRaw === "e" ? "E" : "Quando";
   return {
     keyword,
     content: match[2]
@@ -54,7 +56,9 @@ function TypeSelectorSidebar({
   steps,
   systemInfo,
   attachments,
-  onSelectKind
+  onSelectKind,
+  onCheckAzureAuth,
+  isCheckingAzureAuth
 }: TypeSelectorSidebarProps) {
   const activeTheme = themeMap[kind];
   const fullTitle = buildFullTitle(titleTag, titleText);
@@ -67,7 +71,17 @@ function TypeSelectorSidebar({
   return (
     <aside className="rounded-[24px] border border-white/10 bg-slate-950/85 p-4 shadow-panel backdrop-blur xl:max-h-[calc(100vh-1.5rem)] xl:overflow-y-auto">
       <p className="text-[11px] uppercase tracking-[0.35em] text-slate-400">Tipo</p>
-      <h1 className="mt-2 text-2xl font-semibold tracking-tight text-white">{config.title}</h1>
+      <div className="mt-2 flex items-center justify-between gap-2">
+        <h1 className="text-2xl font-semibold tracking-tight text-white">{config.title}</h1>
+        <button
+          type="button"
+          onClick={onCheckAzureAuth}
+          disabled={isCheckingAzureAuth}
+          className="inline-flex items-center justify-center rounded-xl border border-white/25 bg-white/10 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isCheckingAzureAuth ? "Validando" : "Testar PAT"}
+        </button>
+      </div>
       <p className="mt-2 text-sm leading-6 text-slate-300">{config.basePath}</p>
 
       <div className="mt-4 grid grid-cols-2 gap-2">
@@ -88,7 +102,8 @@ function TypeSelectorSidebar({
             >
               <span className={`inline-flex rounded-full border px-3 py-1 text-xs uppercase tracking-[0.3em] ${isActive ? activeTheme.badge : "border-white/10 bg-white/5 text-slate-300"}`}>
                 {displayLabel}
-              </span>              <p className="mt-1 text-xs leading-5 text-slate-300">
+              </span>
+              <p className="mt-1 text-xs leading-5 text-slate-300">
                 {item.id === "bug"
                   ? "Falha com passos, severidade e system info."
                   : item.id === "issue"
@@ -99,7 +114,6 @@ function TypeSelectorSidebar({
           );
         })}
       </div>
-
 
       <div className="mt-4 rounded-3xl border border-white/10 bg-white/5 p-4">
         <p className="text-[11px] uppercase tracking-[0.3em] text-slate-400">Preview</p>
@@ -224,7 +238,3 @@ function TypeSelectorSidebar({
 }
 
 export default TypeSelectorSidebar;
-
-
-
-
