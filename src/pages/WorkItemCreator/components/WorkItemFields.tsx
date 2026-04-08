@@ -480,7 +480,7 @@ function WorkItemFields({
           <div className="grid gap-2 xl:col-span-2 xl:grid-cols-4">
             {priorityField ? renderGenericField(priorityField) : null}
             {severityField ? renderGenericField(severityField) : null}
-            {activityField ? renderGenericField(activityField, { label: "Development" }) : null}
+            {activityField ? renderGenericField(activityField, { label: "Activity" }) : null}
             {processPhaseField ? renderGenericField(processPhaseField) : null}
           </div>
           <div className="grid items-start gap-3 xl:col-span-2 xl:grid-cols-2">
@@ -528,7 +528,7 @@ function WorkItemFields({
       ) : (
         <>
           {priorityField ? renderGenericField(priorityField) : null}
-          {activityField ? renderGenericField(activityField, { label: "Development" }) : null}
+          {activityField ? renderGenericField(activityField, { label: "Activity" }) : null}
           {descriptionField ? renderGenericField(descriptionField) : null}
           {mediaField ? renderGenericField(mediaField) : null}
         </>

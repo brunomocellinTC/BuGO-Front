@@ -89,6 +89,7 @@ export type AttachmentDraft = {
   type: string;
   size: number;
   previewUrl?: string;
+  contentBase64?: string;
 };
 
 export type SystemInfoItem = {
@@ -104,3 +105,4 @@ export type AzureAuthCheckResponse = {
   project: string;
   checkedAt: string;
 };
+

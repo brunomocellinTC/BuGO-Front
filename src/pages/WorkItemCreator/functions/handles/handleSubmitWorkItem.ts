@@ -22,7 +22,6 @@ function getMissingBaseFields(kind: WorkItemKind, formValues: Record<string, str
     { id: "featureId", label: "Feature" },
     { id: "titleTag", label: "Tag" },
     { id: "titleText", label: "Titulo" },
-    { id: "madeBy", label: "Made By" },
     { id: "description", label: "Description" },
     { id: "requesterName", label: "Nome" }
   ];
@@ -98,10 +97,11 @@ export async function handleSubmitWorkItem(
       ...formValues,
       steps: steps.map((step) => step.trim()).filter(Boolean),
       systemInfo,
-      attachments: attachments.map(({ name, type, size }) => ({
+      attachments: attachments.map(({ name, type, size, contentBase64 }) => ({
         name,
         type,
-        size
+        size,
+        contentBase64: contentBase64 ?? ""
       }))
     };
 
@@ -122,3 +122,6 @@ export async function handleSubmitWorkItem(
     setIsSubmitting(false);
   }
 }
+
+
+

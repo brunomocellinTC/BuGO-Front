@@ -38,8 +38,7 @@ export const workItemCreatorHandler = (State: any) => ({
   removeStep: (index: number) =>
     handleRemoveStep(index, State.setSteps),
 
-  handleFiles: (event: ChangeEvent<HTMLInputElement>) =>
-    handleFilesChange(event, State.attachments, State.setAttachments),
+  handleFiles: (event: ChangeEvent<HTMLInputElement>) => {void handleFilesChange(event, State.attachments, State.setAttachments); },
 
   removeAttachment: (index: number) =>
     handleRemoveAttachment(index, State.setAttachments),
@@ -84,4 +83,5 @@ export const workItemCreatorHandler = (State: any) => ({
       setIsSubmitting: State.setIsSubmitting
     })
 });
+
 
