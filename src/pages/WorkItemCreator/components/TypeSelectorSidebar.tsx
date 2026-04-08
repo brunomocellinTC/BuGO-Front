@@ -1,4 +1,4 @@
-import { themeMap } from "../constants/workItemCreatorTheme";
+﻿import { themeMap } from "../constants/workItemCreatorTheme";
 import { buildFullTitle } from "../functions/utils/buildFullTitle";
 import { formatBrowserPreview } from "../functions/utils/formatBrowserPreview";
 import { formatMobilePreview } from "../functions/utils/formatMobilePreview";
@@ -180,12 +180,12 @@ function TypeSelectorSidebar({
               <p className="text-[11px] uppercase tracking-[0.25em] text-slate-400">System Info</p>
               <div className="mt-1 space-y-3 whitespace-pre-wrap leading-6">
                 <div>
-                  <p>---- OS ----</p>
-                  <p>{osPreview || "-"}</p>
-                </div>
-                <div>
                   <p>---- Browsers ----</p>
                   <p>{browserPreview || "-"}</p>
+                </div>
+                <div>
+                  <p>---- OS ----</p>
+                  <p>{osPreview || "-"}</p>
                 </div>
                 <div>
                   <p>---- Mobile ----</p>
@@ -248,5 +248,6 @@ function TypeSelectorSidebar({
 }
 
 export default TypeSelectorSidebar;
+
 
 
