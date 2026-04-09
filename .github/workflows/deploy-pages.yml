@@ -1,4 +1,4 @@
-name: Deploy Front to GitHub Pages
+﻿name: Deploy Front to GitHub Pages
 
 on:
   push:
@@ -23,10 +23,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: yarn
 
       - name: Enable Corepack
         run: corepack enable
+
+      - name: Use Yarn 3.6.4
+        run: corepack prepare yarn@3.6.4 --activate
 
       - name: Install
         run: yarn install --immutable
@@ -48,3 +50,4 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
