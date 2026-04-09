@@ -17,6 +17,8 @@ export const workItemCreatorController = () => {
   const [isSyncing, setIsSyncing] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<SubmitResponse | null>(null);
+  const [isCheckingAzureAuth, setIsCheckingAzureAuth] = useState(false);
+  const [azureAuthFeedback, setAzureAuthFeedback] = useState<{ tone: "success" | "error"; message: string } | null>(null);
   const stepInputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   useEffect(() => {
@@ -99,8 +101,13 @@ export const workItemCreatorController = () => {
     fields,
     selectedEpic,
     parentOptions,
-    setSyncData
+    setSyncData,
+    isCheckingAzureAuth,
+    setIsCheckingAzureAuth,
+    azureAuthFeedback,
+    setAzureAuthFeedback
   };
 
   return { state };
 };
+

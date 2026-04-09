@@ -254,17 +254,6 @@ function WorkItemFields({
             </div>
             <p className="text-xs text-slate-300">Selecione uma ou varias imagens e videos no mesmo envio.</p>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-            {attachments.length > 0 ? (
-              attachments.map((attachment) => (
-                <p key={`${attachment.name}-${attachment.size}`}>
-                  {attachment.name} ({attachment.type || "file"})
-                </p>
-              ))
-            ) : (
-              <p>Nenhum arquivo selecionado. O upload real para o Azure entra na proxima etapa.</p>
-            )}
-          </div>
         </div>
       );
     }
@@ -458,7 +447,6 @@ function WorkItemFields({
   }
 
   const getField = (fieldId: string) => fields.find((field) => field.id === fieldId);
-  const madeByField = getField("madeBy");
   const requesterField = getField("requesterName");
   const descriptionField = getField("description");
   const stepsField = getField("steps");
@@ -473,14 +461,13 @@ function WorkItemFields({
 
   return (
     <>
-      {madeByField ? renderGenericField(madeByField) : null}
-      {requesterField ? renderGenericField(requesterField, { label: "Enviado por" }) : null}
       {kind === "bug" ? (
         <>
-          <div className="grid gap-2 xl:col-span-2 xl:grid-cols-4">
+          <div className="grid gap-2 xl:col-span-2 xl:grid-cols-5">
+            {requesterField ? renderGenericField(requesterField, { label: "Enviado por" }) : null}
             {priorityField ? renderGenericField(priorityField) : null}
             {severityField ? renderGenericField(severityField) : null}
-            {activityField ? renderGenericField(activityField, { label: "Development" }) : null}
+            {activityField ? renderGenericField(activityField, { label: "Activity" }) : null}
             {processPhaseField ? renderGenericField(processPhaseField) : null}
           </div>
           <div className="grid items-start gap-3 xl:col-span-2 xl:grid-cols-2">
@@ -492,8 +479,11 @@ function WorkItemFields({
         </>
       ) : kind === "issue" ? (
         <>
-          {priorityField ? renderGenericField(priorityField) : null}
-          {valueAreaField ? renderGenericField(valueAreaField) : null}
+          <div className="grid gap-2 xl:col-span-2 xl:grid-cols-3">
+            {requesterField ? renderGenericField(requesterField, { label: "Enviado por" }) : null}
+            {priorityField ? renderGenericField(priorityField) : null}
+            {valueAreaField ? renderGenericField(valueAreaField) : null}
+          </div>
           <div className="grid items-start gap-3 xl:col-span-2 xl:grid-cols-2">
             {descriptionField ? renderGenericField(descriptionField, {
               spanTwoColumns: false,
@@ -528,7 +518,7 @@ function WorkItemFields({
       ) : (
         <>
           {priorityField ? renderGenericField(priorityField) : null}
-          {activityField ? renderGenericField(activityField, { label: "Development" }) : null}
+          {activityField ? renderGenericField(activityField, { label: "Activity" }) : null}
           {descriptionField ? renderGenericField(descriptionField) : null}
           {mediaField ? renderGenericField(mediaField) : null}
         </>
@@ -538,5 +528,11 @@ function WorkItemFields({
 }
 
 export default WorkItemFields;
+
+
+
+
+
+
 
 

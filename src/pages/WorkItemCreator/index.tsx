@@ -1,15 +1,85 @@
-﻿import FeedbackMessage from "./components/FeedbackMessage";
+import { useEffect, useRef } from "react";
+import { useToast } from "@chakra-ui/react";
+
 import HierarchySection from "./components/HierarchySection";
 import TypeSelectorSidebar from "./components/TypeSelectorSidebar";
 import WorkItemFields from "./components/WorkItemFields";
 import { themeMap } from "./constants/workItemCreatorTheme";
 import { workItemCreatorController } from "./core/workItemCreatorController";
 import { workItemCreatorHandler } from "./core/workItemCreatorHandler";
+import { showAppToast } from "./functions/utils/showAppToast";
 import { isRequiredFieldInvalid } from "./functions/utils/isRequiredFieldInvalid";
 
 function WorkItemCreatorPage() {
   const { state } = workItemCreatorController();
   const handlers = workItemCreatorHandler(state);
+  const toast = useToast();
+
+  const lastErrorRef = useRef<string | null>(null);
+  const lastResultRef = useRef<string | null>(null);
+  const lastAuthFeedbackRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!state.error || state.error === lastErrorRef.current) {
+      return;
+    }
+
+    lastErrorRef.current = state.error;
+    showAppToast(toast, {
+      status: "error",
+      title: "Erro",
+      description: state.error
+    });
+  }, [state.error, toast]);
+
+  useEffect(() => {
+    if (!state.result) {
+      return;
+    }
+
+    const resultKey = `${state.result.id}-${state.result.url}`;
+
+    if (resultKey === lastResultRef.current) {
+      return;
+    }
+
+    lastResultRef.current = resultKey;
+
+    if (state.result.id === 0) {
+      showAppToast(toast, {
+        status: "info",
+        title: "Validacao local",
+        description: "Nenhum card foi enviado ao Azure."
+      });
+      return;
+    }
+
+    showAppToast(toast, {
+      status: "success",
+      title: "Card enviado",
+      description: `Work item criado com ID ${state.result.id}.`
+    });
+  }, [state.result, toast]);
+
+  useEffect(() => {
+    if (!state.azureAuthFeedback) {
+      return;
+    }
+
+    const feedbackKey = `${state.azureAuthFeedback.tone}-${state.azureAuthFeedback.message}`;
+
+    if (feedbackKey === lastAuthFeedbackRef.current) {
+      return;
+    }
+
+    lastAuthFeedbackRef.current = feedbackKey;
+
+    showAppToast(toast, {
+      status: state.azureAuthFeedback.tone === "success" ? "success" : "error",
+      title: state.azureAuthFeedback.tone === "success" ? "PAT valida" : "Falha na PAT",
+      description: state.azureAuthFeedback.message
+    });
+  }, [state.azureAuthFeedback, toast]);
 
   if (!state.config || state.isSyncing) {
     return (
@@ -46,6 +116,8 @@ function WorkItemCreatorPage() {
             systemInfo={state.systemInfo}
             attachments={state.attachments}
             onSelectKind={state.setKind}
+            onCheckAzureAuth={handlers.checkAzureAuth}
+            isCheckingAzureAuth={state.isCheckingAzureAuth}
           />
 
           <section className="rounded-[24px] border border-white/10 bg-slate-950/78 p-4 shadow-panel backdrop-blur xl:max-h-[calc(100vh-1.5rem)] xl:overflow-y-auto">
@@ -111,23 +183,6 @@ function WorkItemCreatorPage() {
                 {state.isSubmitting ? "Creating..." : `Create ${state.kind === "issue" ? "PBI" : state.kind === "bug" ? "bug" : "task"}`}
               </button>
             </form>
-
-            {state.error ? <FeedbackMessage tone="error">{state.error}</FeedbackMessage> : null}
-
-            {state.result ? (
-              <FeedbackMessage tone="success">
-                {state.result.id === 0 ? (
-                  <span>Validacao local concluida. Nenhum card foi enviado ao Azure.</span>
-                ) : (
-                  <>
-                    Work item criado com ID <strong>{state.result.id}</strong>.
-                    <a className="ml-2 underline" href={state.result.url} target="_blank" rel="noreferrer">
-                      Abrir no Azure
-                    </a>
-                  </>
-                )}
-              </FeedbackMessage>
-            ) : null}
           </section>
         </section>
       </div>
@@ -136,8 +191,3 @@ function WorkItemCreatorPage() {
 }
 
 export default WorkItemCreatorPage;
-
-
-
-
-

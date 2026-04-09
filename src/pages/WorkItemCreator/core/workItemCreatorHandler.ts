@@ -1,6 +1,7 @@
 import type { ChangeEvent, FormEvent } from "react";
 import { saveStoredSystemInfo } from "../functions/utils/saveStoredSystemInfo";
 import { handleAddStep } from "../functions/handles/handleAddStep";
+import { handleCheckAzureAuth } from "../functions/handles/handleCheckAzureAuth";
 import { handleFilesChange } from "../functions/handles/handleFilesChange";
 import { handleRemoveAttachment } from "../functions/handles/handleRemoveAttachment";
 import { handleRemoveStep } from "../functions/handles/handleRemoveStep";
@@ -37,8 +38,7 @@ export const workItemCreatorHandler = (State: any) => ({
   removeStep: (index: number) =>
     handleRemoveStep(index, State.setSteps),
 
-  handleFiles: (event: ChangeEvent<HTMLInputElement>) =>
-    handleFilesChange(event, State.attachments, State.setAttachments),
+  handleFiles: (event: ChangeEvent<HTMLInputElement>) => {void handleFilesChange(event, State.attachments, State.setAttachments); },
 
   removeAttachment: (index: number) =>
     handleRemoveAttachment(index, State.setAttachments),
@@ -64,6 +64,12 @@ export const workItemCreatorHandler = (State: any) => ({
   saveSystemInfo: () =>
     saveStoredSystemInfo(State.systemInfo),
 
+  checkAzureAuth: () =>
+    handleCheckAzureAuth({
+      setIsCheckingAzureAuth: State.setIsCheckingAzureAuth,
+      setAzureAuthFeedback: State.setAzureAuthFeedback
+    }),
+
   handleSubmit: (event: FormEvent<HTMLFormElement>) =>
     handleSubmitWorkItem(event, {
       kind: State.kind,
@@ -77,3 +83,5 @@ export const workItemCreatorHandler = (State: any) => ({
       setIsSubmitting: State.setIsSubmitting
     })
 });
+
+

@@ -22,18 +22,21 @@ type TypeSelectorSidebarProps = {
   systemInfo: SystemInfoItem[];
   attachments: AttachmentDraft[];
   onSelectKind: (kind: WorkItemKind) => void;
+  onCheckAzureAuth: () => void;
+  isCheckingAzureAuth: boolean;
 };
 
 function splitBddStep(step: string) {
   const trimmed = step.trim();
-  const match = trimmed.match(/^(Quando|E|Ent[aã]o)\b\s*(.*)$/i);
+  const normalized = trimmed.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const match = normalized.match(/^(Quando|E|Entao)\b\s*(.*)$/i);
 
   if (!match) {
     return null;
   }
 
   const keywordRaw = match[1].toLowerCase();
-  const keyword = keywordRaw.startsWith("ent") ? "Então" : keywordRaw === "e" ? "E" : "Quando";
+  const keyword = keywordRaw.startsWith("ent") ? "Ent\u00e3o" : keywordRaw === "e" ? "E" : "Quando";
   return {
     keyword,
     content: match[2]
@@ -54,7 +57,9 @@ function TypeSelectorSidebar({
   steps,
   systemInfo,
   attachments,
-  onSelectKind
+  onSelectKind,
+  onCheckAzureAuth,
+  isCheckingAzureAuth
 }: TypeSelectorSidebarProps) {
   const activeTheme = themeMap[kind];
   const fullTitle = buildFullTitle(titleTag, titleText);
@@ -63,11 +68,22 @@ function TypeSelectorSidebar({
   const mobilePreview = formatMobilePreview(systemInfo);
   const imageAttachments = getImageAttachments(attachments);
   const videoAttachments = getVideoAttachments(attachments);
+  const hasAnyAttachmentPreview = imageAttachments.length > 0 || videoAttachments.length > 0;
 
   return (
     <aside className="rounded-[24px] border border-white/10 bg-slate-950/85 p-4 shadow-panel backdrop-blur xl:max-h-[calc(100vh-1.5rem)] xl:overflow-y-auto">
       <p className="text-[11px] uppercase tracking-[0.35em] text-slate-400">Tipo</p>
-      <h1 className="mt-2 text-2xl font-semibold tracking-tight text-white">{config.title}</h1>
+      <div className="mt-2 flex items-center justify-between gap-2">
+        <h1 className="text-2xl font-semibold tracking-tight text-white">{config.title}</h1>
+        <button
+          type="button"
+          onClick={onCheckAzureAuth}
+          disabled={isCheckingAzureAuth}
+          className="inline-flex items-center justify-center rounded-xl border border-white/25 bg-white/10 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isCheckingAzureAuth ? "Validando" : "Testar PAT"}
+        </button>
+      </div>
       <p className="mt-2 text-sm leading-6 text-slate-300">{config.basePath}</p>
 
       <div className="mt-4 grid grid-cols-2 gap-2">
@@ -79,7 +95,7 @@ function TypeSelectorSidebar({
               key={item.id}
               type="button"
               onClick={() => onSelectKind(item.id)}
-              className={`rounded-2xl border px-3 py-3 text-left transition ${isActive
+              className={`flex min-h-[118px] flex-col items-center justify-center rounded-2xl border px-3 py-2 text-center transition ${isActive
                   ? item.id === "bug"
                     ? "border-red-400 bg-white/10 shadow-lg"
                     : "border-sky-400 bg-white/10 shadow-lg"
@@ -88,7 +104,8 @@ function TypeSelectorSidebar({
             >
               <span className={`inline-flex rounded-full border px-3 py-1 text-xs uppercase tracking-[0.3em] ${isActive ? activeTheme.badge : "border-white/10 bg-white/5 text-slate-300"}`}>
                 {displayLabel}
-              </span>              <p className="mt-1 text-xs leading-5 text-slate-300">
+              </span>
+              <p className="mt-1 text-xs leading-5 text-slate-300">
                 {item.id === "bug"
                   ? "Falha com passos, severidade e system info."
                   : item.id === "issue"
@@ -100,7 +117,6 @@ function TypeSelectorSidebar({
         })}
       </div>
 
-
       <div className="mt-4 rounded-3xl border border-white/10 bg-white/5 p-4">
         <p className="text-[11px] uppercase tracking-[0.3em] text-slate-400">Preview</p>
         <p className="mt-2 text-base font-medium text-white">{fullTitle || "[TAG] Titulo do card"}</p>
@@ -108,7 +124,7 @@ function TypeSelectorSidebar({
           <div>
             <p className="text-[11px] uppercase tracking-[0.25em] text-slate-400">Description</p>
             <p className="mt-1 whitespace-pre-wrap leading-6">{description || "-"}</p>
-            {imageAttachments.length > 0 ? (
+            {hasAnyAttachmentPreview ? (
               <div className="mt-3">
                 <p>-- Anexos --</p>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -123,6 +139,21 @@ function TypeSelectorSidebar({
                     ) : null
                   )}
                 </div>
+                {videoAttachments.length > 0 ? (
+                  <div className="mt-3 space-y-1">
+                    {videoAttachments.map((attachment) => (
+                      <a
+                        key={`${attachment.name}-${attachment.size}`}
+                        href={attachment.previewUrl || "#"}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block underline"
+                      >
+                        {`Segue video ${attachment.name}`}
+                      </a>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </div>
@@ -149,12 +180,12 @@ function TypeSelectorSidebar({
               <p className="text-[11px] uppercase tracking-[0.25em] text-slate-400">System Info</p>
               <div className="mt-1 space-y-3 whitespace-pre-wrap leading-6">
                 <div>
-                  <p>---- OS ----</p>
-                  <p>{osPreview || "-"}</p>
-                </div>
-                <div>
                   <p>---- Browsers ----</p>
                   <p>{browserPreview || "-"}</p>
+                </div>
+                <div>
+                  <p>---- OS ----</p>
+                  <p>{osPreview || "-"}</p>
                 </div>
                 <div>
                   <p>---- Mobile ----</p>
@@ -209,14 +240,7 @@ function TypeSelectorSidebar({
             </div>
           ) : null}
 
-          {videoAttachments.length > 0 ? (
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.25em] text-slate-400">Videos</p>
-              <p className="mt-1 whitespace-pre-wrap leading-6">
-                {`Segue ${videoAttachments.map((attachment) => attachment.name).join(", ")}`}
-              </p>
-            </div>
-          ) : null}
+
         </div>
       </div>
     </aside>
@@ -224,6 +248,7 @@ function TypeSelectorSidebar({
 }
 
 export default TypeSelectorSidebar;
+
 
 
 
