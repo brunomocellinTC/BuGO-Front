@@ -1,9 +1,22 @@
-﻿import { AzureEpic, WorkItemKind } from "../types/workItemCreatorTypes";
+﻿import { AzureEpic, Option, WorkItemKind } from "../types/workItemCreatorTypes";
+
+function getAreaDisplayLabel(area: Option) {
+  const fallback = area.value.split("\\").pop() || area.value;
+  const label = (area.label || "").trim();
+
+  if (!label) {
+    return fallback;
+  }
+
+  const fromLabel = label.split("\\").pop()?.trim() || label;
+  return fromLabel;
+}
 
 type HierarchySectionProps = {
   kind: WorkItemKind;
   syncData: { epics: AzureEpic[] } | null;
   selectedEpic?: AzureEpic;
+  areaOptions: Option[];
   parentOptions: Array<{
     id: number;
     title: string;
@@ -13,6 +26,7 @@ type HierarchySectionProps = {
     epicId?: string;
     featureId?: string;
     parentId?: string;
+    areaPath?: string;
     titleTag?: string;
     titleText?: string;
   };
@@ -27,6 +41,7 @@ function HierarchySection({
   kind,
   syncData,
   selectedEpic,
+  areaOptions,
   parentOptions,
   values,
   onEpicChange,
@@ -93,7 +108,26 @@ function HierarchySection({
         ) : null}
       </div>
 
-      <div className="xl:col-span-2 grid gap-2 xl:grid-cols-2">
+      <div className="xl:col-span-2 grid gap-2 xl:grid-cols-3">
+        <label className="grid gap-2">
+          <span className="text-sm font-semibold text-white">Area *</span>
+          <select
+            required
+            value={values.areaPath ?? ""}
+            onChange={(event) => {
+              console.log("[BuGO][AreaSelect] selectedAreaPath:", event.target.value);
+              onFieldChange("areaPath", event.target.value);
+            }}
+            className={`input-base ${isFieldInvalid("areaPath", true) ? "border-red-400 bg-red-50 text-red-950 focus:border-red-500 focus:ring-red-100" : ""}`}
+          >
+            {areaOptions.map((area) => (
+              <option key={area.value} value={area.value}>
+                {getAreaDisplayLabel(area)}
+              </option>
+            ))}
+          </select>
+        </label>
+
         <label className="grid gap-2">
           <span className="text-sm font-semibold text-white">Tag *</span>
           <input
@@ -121,6 +155,3 @@ function HierarchySection({
 }
 
 export default HierarchySection;
-
-
-

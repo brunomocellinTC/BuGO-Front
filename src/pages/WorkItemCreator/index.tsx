@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+﻿import { useEffect, useRef } from "react";
 import { useToast } from "@chakra-ui/react";
 
 import HierarchySection from "./components/HierarchySection";
@@ -126,6 +126,7 @@ function WorkItemCreatorPage() {
                 kind={state.kind}
                 syncData={state.syncData}
                 selectedEpic={state.selectedEpic}
+                areaOptions={state.config.areaOptions}
                 parentOptions={state.parentOptions}
                 values={state.formValues}
                 onEpicChange={handlers.updateEpic}
@@ -191,3 +192,5 @@ function WorkItemCreatorPage() {
 }
 
 export default WorkItemCreatorPage;
+
+
