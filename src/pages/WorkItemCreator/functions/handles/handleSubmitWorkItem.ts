@@ -107,11 +107,11 @@ export async function handleSubmitWorkItem(
     };
 
     console.log("[BuGO][SubmitPayload]", {
-      areaPath: payload.areaPath,
-      epicId: payload.epicId,
-      featureId: payload.featureId,
-      parentId: payload.parentId,
-      kind: payload.kind
+      areaPath: formValues.areaPath,
+      epicId: formValues.epicId,
+      featureId: formValues.featureId,
+      parentId: formValues.parentId,
+      kind
     });
 
     if (FRONTEND_ONLY_SUBMIT) {
