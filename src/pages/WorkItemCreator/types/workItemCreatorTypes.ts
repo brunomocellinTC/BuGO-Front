@@ -1,4 +1,4 @@
-export type WorkItemKind = "bug" | "issue" | "task";
+﻿export type WorkItemKind = "bug" | "issue" | "task";
 
 export type Option = {
   value: string;
@@ -26,6 +26,7 @@ export type FormConfigResponse = {
     workItemType: string;
   }>;
   titleTags: Option[];
+  areaOptions: Option[];
   people: Option[];
   browsers: Option[];
   desktopPlatforms: Option[];
@@ -105,4 +106,6 @@ export type AzureAuthCheckResponse = {
   project: string;
   checkedAt: string;
 };
+
+
 

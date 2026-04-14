@@ -1,4 +1,4 @@
-import type { Dispatch, FormEvent, SetStateAction } from "react";
+﻿import type { Dispatch, FormEvent, SetStateAction } from "react";
 
 import { postWorkItem } from "../api/postWorkItem";
 import { FRONTEND_ONLY_SUBMIT } from "../utils/frontendOnlySubmit";
@@ -20,6 +20,7 @@ function getMissingBaseFields(kind: WorkItemKind, formValues: Record<string, str
   const requiredFields: Array<{ id: string; label: string }> = [
     { id: "epicId", label: "Epic" },
     { id: "featureId", label: "Feature" },
+    { id: "areaPath", label: "Area" },
     { id: "titleTag", label: "Tag" },
     { id: "titleText", label: "Titulo" },
     { id: "description", label: "Description" },
@@ -105,6 +106,14 @@ export async function handleSubmitWorkItem(
       }))
     };
 
+    console.log("[BuGO][SubmitPayload]", {
+      areaPath: payload.areaPath,
+      epicId: payload.epicId,
+      featureId: payload.featureId,
+      parentId: payload.parentId,
+      kind: payload.kind
+    });
+
     if (FRONTEND_ONLY_SUBMIT) {
       window.setTimeout(() => {
         setResult({ id: 0, url: "#" });
@@ -122,6 +131,8 @@ export async function handleSubmitWorkItem(
     setIsSubmitting(false);
   }
 }
+
+
 
 
 
