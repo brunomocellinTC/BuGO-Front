@@ -23,8 +23,7 @@ function getMissingBaseFields(kind: WorkItemKind, formValues: Record<string, str
     { id: "areaPath", label: "Area" },
     { id: "titleTag", label: "Tag" },
     { id: "titleText", label: "Titulo" },
-    { id: "description", label: "Description" },
-    { id: "requesterName", label: "Nome" }
+    { id: "description", label: "Description" }
   ];
 
   if (kind === "task") {

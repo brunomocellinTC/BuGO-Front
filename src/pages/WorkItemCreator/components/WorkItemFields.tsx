@@ -447,7 +447,7 @@ function WorkItemFields({
   }
 
   const getField = (fieldId: string) => fields.find((field) => field.id === fieldId);
-  const requesterField = getField("requesterName");
+  const sendByField = getField("sendBy");
   const descriptionField = getField("description");
   const stepsField = getField("steps");
   const systemInfoField = getField("systemInfo");
@@ -464,7 +464,7 @@ function WorkItemFields({
       {kind === "bug" ? (
         <>
           <div className="grid gap-2 xl:col-span-2 xl:grid-cols-5">
-            {requesterField ? renderGenericField(requesterField, { label: "Enviado por" }) : null}
+            {sendByField ? renderGenericField(sendByField, { label: "Enviado por" }) : null}
             {priorityField ? renderGenericField(priorityField) : null}
             {severityField ? renderGenericField(severityField) : null}
             {activityField ? renderGenericField(activityField, { label: "Activity" }) : null}
@@ -480,7 +480,7 @@ function WorkItemFields({
       ) : kind === "issue" ? (
         <>
           <div className="grid gap-2 xl:col-span-2 xl:grid-cols-3">
-            {requesterField ? renderGenericField(requesterField, { label: "Enviado por" }) : null}
+            {sendByField ? renderGenericField(sendByField, { label: "Enviado por" }) : null}
             {priorityField ? renderGenericField(priorityField) : null}
             {valueAreaField ? renderGenericField(valueAreaField) : null}
           </div>
