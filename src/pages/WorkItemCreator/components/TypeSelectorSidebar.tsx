@@ -17,7 +17,7 @@ type TypeSelectorSidebarProps = {
   priority?: string;
   valueArea?: string;
   activity?: string;
-  requesterName?: string;
+  sendBy?: string;
   steps: string[];
   systemInfo: SystemInfoItem[];
   attachments: AttachmentDraft[];
@@ -53,7 +53,7 @@ function TypeSelectorSidebar({
   priority,
   valueArea,
   activity,
-  requesterName,
+  sendBy,
   steps,
   systemInfo,
   attachments,
@@ -224,7 +224,7 @@ function TypeSelectorSidebar({
                 {"\n"}
                 Value Area: {valueArea || "-"}
                 {"\n"}
-                Enviado por: {requesterName || "-"}
+                Enviado por: {sendBy || "-"}
               </p>
             </div>
           ) : kind === "task" ? (
@@ -235,7 +235,7 @@ function TypeSelectorSidebar({
                 {"\n"}
                 Development: {activity || "-"}
                 {"\n"}
-                Enviado por: {requesterName || "-"}
+                Enviado por: {sendBy || "-"}
               </p>
             </div>
           ) : null}

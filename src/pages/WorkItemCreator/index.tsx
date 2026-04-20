@@ -111,7 +111,7 @@ function WorkItemCreatorPage() {
             priority={state.formValues.priority}
             valueArea={state.formValues.valueArea}
             activity={state.formValues.activity}
-            requesterName={state.formValues.requesterName}
+            sendBy={state.formValues.sendBy}
             steps={state.steps}
             systemInfo={state.systemInfo}
             attachments={state.attachments}
