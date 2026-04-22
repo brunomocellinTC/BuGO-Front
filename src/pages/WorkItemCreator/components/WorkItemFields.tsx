@@ -1,4 +1,4 @@
-﻿import type { ChangeEvent, MutableRefObject } from "react";
+import type { ChangeEvent, MutableRefObject } from "react";
 import InfoPopover from "./InfoPopover";
 import { AttachmentDraft, FormConfigResponse, FormField, SystemInfoItem, WorkItemKind } from "../types/workItemCreatorTypes";
 
@@ -82,7 +82,7 @@ function WorkItemFields({
 
     if (field.type === "steps") {
       return (
-        <div key={field.id} className={`grid h-full gap-2 content-start ${spanTwoColumns ? "xl:col-span-2" : ""} ${bugStepsInvalid ? "rounded-2xl border border-red-400/70 p-2" : ""}`}>
+        <div key={field.id} data-field-id={field.id} tabIndex={-1} className={`grid h-full gap-2 content-start ${spanTwoColumns ? "xl:col-span-2" : ""} ${bugStepsInvalid ? "rounded-2xl border border-red-400/70 p-2" : ""}`}>
           <div className="flex items-center justify-between gap-2">
             <span className="text-sm font-semibold text-white">{fieldLabel}</span>
             <InfoPopover
@@ -96,7 +96,7 @@ function WorkItemFields({
                 { keyword: "E", text: "a home aparece" },
                 { keyword: "E", text: "clico no botao 'login'" },
                 { keyword: "E", text: "valido meu perfil" },
-                { keyword: "Então", text: "vejo o Dashboard" }
+                { keyword: "Ent�o", text: "vejo o Dashboard" }
               ]}
             />
           </div>
@@ -104,6 +104,7 @@ function WorkItemFields({
             {steps.map((step, index) => (
               <div key={`${field.id}-${index}`} className="flex gap-2">
                 <input
+                  data-field-id={index === 0 ? field.id : undefined}
                   type="text"
                   value={step}
                   placeholder={`Passo ${index + 1}`}
@@ -159,9 +160,9 @@ function WorkItemFields({
       };
 
       return (
-        <div key={field.id} className={`grid h-full gap-2 content-start ${spanTwoColumns ? "xl:col-span-2" : ""} ${issueCriteriaInvalid ? "rounded-2xl border border-red-400/70 p-2" : ""}`}>
+        <div key={field.id} data-field-id={field.id} tabIndex={-1} className={`grid h-full gap-2 content-start ${spanTwoColumns ? "xl:col-span-2" : ""} ${issueCriteriaInvalid ? "rounded-2xl border border-red-400/70 p-2" : ""}`}>
           <div className="flex items-center justify-between gap-2">
-            <span className="text-sm font-semibold text-white">{fieldLabel}{field.required ? " *" : ""}</span>
+            <span className="text-sm font-semibold text-white">{fieldLabel}{field.required ? "" : ""}</span>
             {popover ? (
               <InfoPopover
                 title={popover.title}
@@ -211,7 +212,7 @@ function WorkItemFields({
     if (field.type === "media") {
       const uploadPanelClass = kind === "bug" ? "min-h-[196px]" : "";
       return (
-        <div key={field.id} className={`grid gap-2 ${spanTwoColumns ? "xl:col-span-2" : ""} ${bugMediaInvalid ? "rounded-2xl border border-red-400/70 p-2" : ""}`}>
+        <div key={field.id} data-field-id={field.id} tabIndex={-1} className={`grid gap-2 ${spanTwoColumns ? "xl:col-span-2" : ""} ${bugMediaInvalid ? "rounded-2xl border border-red-400/70 p-2" : ""}`}>
           <span className="text-sm font-semibold text-white">{fieldLabel}</span>
           <div className={`flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 ${uploadPanelClass}`}>
             <div className="flex flex-col gap-3 xl:flex-row xl:items-start">
@@ -221,6 +222,7 @@ function WorkItemFields({
               >
                 Escolher arquivos
                 <input
+                  data-field-id={field.id}
                   type="file"
                   accept="image/*,video/*"
                   multiple
@@ -260,7 +262,7 @@ function WorkItemFields({
 
     if (field.type === "systemInfo") {
       return (
-        <div key={field.id} className={`grid gap-2 ${spanTwoColumns ? "xl:col-span-2" : ""} ${bugSystemInfoInvalid ? "rounded-2xl border border-red-400/70 p-2" : ""}`}>
+        <div key={field.id} data-field-id={field.id} tabIndex={-1} className={`grid gap-2 ${spanTwoColumns ? "xl:col-span-2" : ""} ${bugSystemInfoInvalid ? "rounded-2xl border border-red-400/70 p-2" : ""}`}>
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm font-semibold text-white">{fieldLabel}</span>
             <button
@@ -392,7 +394,7 @@ function WorkItemFields({
         <div className="flex items-center justify-between gap-2">
           <span className="text-sm font-semibold text-white">
             {fieldLabel}
-            {field.required ? " *" : ""}
+            {field.required ? "" : ""}
           </span>
           {popover ? (
             <InfoPopover
@@ -409,13 +411,13 @@ function WorkItemFields({
         </div>
         {field.type === "select" ? (
           <select
-            required={field.required}
+            data-field-id={field.id}
             value={value}
             onChange={(event) => updateField(field.id, event.target.value)}
             className={`input-base ${invalidClass}`}
           >
             <option value="" disabled={!field.required}>
-              {field.required ? "Selecione..." : "Opcional"}
+              {field.required ? "Obrigatório" : "Selecione..."}
             </option>
             {field.options?.map((option) => (
               <option key={option.value} value={option.value}>
@@ -425,7 +427,7 @@ function WorkItemFields({
           </select>
         ) : field.type === "textarea" ? (
           <textarea
-            required={field.required}
+            data-field-id={field.id}
             rows={4}
             value={value}
             placeholder={field.placeholder}
@@ -434,7 +436,7 @@ function WorkItemFields({
           />
         ) : (
           <input
-            required={field.required}
+            data-field-id={field.id}
             type="text"
             value={value}
             placeholder={field.placeholder}
@@ -464,7 +466,7 @@ function WorkItemFields({
       {kind === "bug" ? (
         <>
           <div className="grid gap-2 xl:col-span-2 xl:grid-cols-5">
-            {sendByField ? renderGenericField(sendByField, { label: "Enviado por" }) : null}
+            {sendByField ? renderGenericField(sendByField, { label: "Send By" }) : null}
             {priorityField ? renderGenericField(priorityField) : null}
             {severityField ? renderGenericField(severityField) : null}
             {activityField ? renderGenericField(activityField, { label: "Activity" }) : null}
@@ -480,7 +482,7 @@ function WorkItemFields({
       ) : kind === "issue" ? (
         <>
           <div className="grid gap-2 xl:col-span-2 xl:grid-cols-3">
-            {sendByField ? renderGenericField(sendByField, { label: "Enviado por" }) : null}
+            {sendByField ? renderGenericField(sendByField, { label: "Send By" }) : null}
             {priorityField ? renderGenericField(priorityField) : null}
             {valueAreaField ? renderGenericField(valueAreaField) : null}
           </div>
@@ -505,10 +507,10 @@ function WorkItemFields({
                 useBddTrigger: true,
                 items: [
                   { keyword: "Quando", text: "o usuario informar credenciais validas e confirmar o login" },
-                  { keyword: "Então", text: "o sistema deve redirecionar para o Dashboard em ate 2 segundos" },
+                  { keyword: "Ent�o", text: "o sistema deve redirecionar para o Dashboard em ate 2 segundos" },
                   { keyword: "E", text: "o nome do usuario autenticado deve aparecer no cabecalho" },
                   { keyword: "Quando", text: "as credenciais estiverem invalidas" },
-                  { keyword: "Então", text: "deve exibir mensagem clara sem limpar os campos preenchidos" }
+                  { keyword: "Ent�o", text: "deve exibir mensagem clara sem limpar os campos preenchidos" }
                 ]
               }
             }) : null}
@@ -528,6 +530,13 @@ function WorkItemFields({
 }
 
 export default WorkItemFields;
+
+
+
+
+
+
+
 
 
 

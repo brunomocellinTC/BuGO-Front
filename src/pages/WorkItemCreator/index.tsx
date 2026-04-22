@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useToast } from "@chakra-ui/react";
 
 import HierarchySection from "./components/HierarchySection";
@@ -14,17 +14,13 @@ function WorkItemCreatorPage() {
   const { state } = workItemCreatorController();
   const handlers = workItemCreatorHandler(state);
   const toast = useToast();
-
-  const lastErrorRef = useRef<string | null>(null);
   const lastResultRef = useRef<string | null>(null);
   const lastAuthFeedbackRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!state.error || state.error === lastErrorRef.current) {
+    if (!state.error) {
       return;
     }
-
-    lastErrorRef.current = state.error;
     showAppToast(toast, {
       status: "error",
       title: "Erro",
@@ -192,5 +188,8 @@ function WorkItemCreatorPage() {
 }
 
 export default WorkItemCreatorPage;
+
+
+
 
 

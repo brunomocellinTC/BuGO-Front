@@ -224,7 +224,7 @@ function TypeSelectorSidebar({
                 {"\n"}
                 Value Area: {valueArea || "-"}
                 {"\n"}
-                Enviado por: {sendBy || "-"}
+                Send By: {sendBy || "-"}
               </p>
             </div>
           ) : kind === "task" ? (
@@ -235,7 +235,7 @@ function TypeSelectorSidebar({
                 {"\n"}
                 Development: {activity || "-"}
                 {"\n"}
-                Enviado por: {sendBy || "-"}
+                Send By: {sendBy || "-"}
               </p>
             </div>
           ) : null}
