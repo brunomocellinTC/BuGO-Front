@@ -1,4 +1,4 @@
-﻿import { AzureEpic, Option, WorkItemKind } from "../types/workItemCreatorTypes";
+import { AzureEpic, Option, WorkItemKind } from "../types/workItemCreatorTypes";
 
 function getAreaDisplayLabel(area: Option) {
   const fallback = area.value.split("\\").pop() || area.value;
@@ -54,9 +54,9 @@ function HierarchySection({
     <>
       <div className={`xl:col-span-2 grid gap-2 ${kind === "task" ? "xl:grid-cols-3" : "xl:grid-cols-2"}`}>
         <label className="grid gap-2">
-          <span className="text-sm font-semibold text-white">Epic *</span>
+          <span className="text-sm font-semibold text-white">Epic</span>
           <select
-            required
+            data-field-id="epicId"
             value={values.epicId ?? ""}
             onChange={(event) => void onEpicChange(event.target.value)}
             className={`input-base ${isFieldInvalid("epicId", true) ? "border-red-400 bg-red-50 text-red-950 focus:border-red-500 focus:ring-red-100" : ""}`}
@@ -74,9 +74,9 @@ function HierarchySection({
         </label>
 
         <label className="grid gap-2">
-          <span className="text-sm font-semibold text-white">Feature *</span>
+          <span className="text-sm font-semibold text-white">Feature</span>
           <select
-            required
+            data-field-id="featureId"
             value={values.featureId ?? ""}
             onChange={(event) => void onFeatureChange(event.target.value)}
             className={`input-base ${isFieldInvalid("featureId", true) ? "border-red-400 bg-red-50 text-red-950 focus:border-red-500 focus:ring-red-100" : ""}`}
@@ -91,9 +91,9 @@ function HierarchySection({
 
         {kind === "task" ? (
           <label className="grid gap-2">
-            <span className="text-sm font-semibold text-white">Parent item *</span>
+            <span className="text-sm font-semibold text-white">Parent item</span>
             <select
-              required
+              data-field-id="parentId"
               value={values.parentId ?? ""}
               onChange={(event) => void onParentChange(event.target.value)}
               className={`input-base ${isFieldInvalid("parentId", true) ? "border-red-400 bg-red-50 text-red-950 focus:border-red-500 focus:ring-red-100" : ""}`}
@@ -110,9 +110,9 @@ function HierarchySection({
 
       <div className="xl:col-span-2 grid gap-2 xl:grid-cols-3">
         <label className="grid gap-2">
-          <span className="text-sm font-semibold text-white">Area *</span>
+          <span className="text-sm font-semibold text-white">Area</span>
           <select
-            required
+            data-field-id="areaPath"
             value={values.areaPath ?? ""}
             onChange={(event) => {
               console.log("[BuGO][AreaSelect] selectedAreaPath:", event.target.value);
@@ -129,19 +129,20 @@ function HierarchySection({
         </label>
 
         <label className="grid gap-2">
-          <span className="text-sm font-semibold text-white">Tag *</span>
+          <span className="text-sm font-semibold text-white">Tag</span>
           <input
+            data-field-id="titleTag"
             value={values.titleTag ?? ""}
             placeholder="Grafia, Android, Home"
             onChange={(event) => onFieldChange("titleTag", event.target.value)}
-            className="input-base"
+            className={`input-base ${isFieldInvalid("titleTag", true) ? "border-red-400 bg-red-50 text-red-950 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100" : ""}`}
           />
         </label>
 
         <label className="grid gap-2">
-          <span className="text-sm font-semibold text-white">Titulo *</span>
+          <span className="text-sm font-semibold text-white">Titulo</span>
           <input
-            required
+            data-field-id="titleText"
             type="text"
             value={values.titleText ?? ""}
             placeholder="Titulo mais detalhado do card"
@@ -155,3 +156,4 @@ function HierarchySection({
 }
 
 export default HierarchySection;
+

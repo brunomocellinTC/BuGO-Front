@@ -1,4 +1,4 @@
-﻿import type { Dispatch, FormEvent, SetStateAction } from "react";
+import type { Dispatch, FormEvent, SetStateAction } from "react";
 
 import { postWorkItem } from "../api/postWorkItem";
 import { FRONTEND_ONLY_SUBMIT } from "../utils/frontendOnlySubmit";
@@ -16,23 +16,27 @@ type SubmitDependencies = {
   setIsSubmitting: Dispatch<SetStateAction<boolean>>;
 };
 
-function getMissingBaseFields(kind: WorkItemKind, formValues: Record<string, string>) {
-  const requiredFields: Array<{ id: string; label: string }> = [
-    { id: "epicId", label: "Epic" },
-    { id: "featureId", label: "Feature" },
-    { id: "areaPath", label: "Area" },
-    { id: "titleTag", label: "Tag" },
-    { id: "titleText", label: "Titulo" },
-    { id: "description", label: "Description" }
-  ];
-
-  if (kind === "task") {
-    requiredFields.push({ id: "parentId", label: "Parent item" });
+function focusInvalidField(fieldId: string) {
+  if (typeof document === "undefined") {
+    return;
   }
 
-  return requiredFields
-    .filter((field) => !(formValues[field.id] ?? "").trim())
-    .map((field) => field.label);
+  window.setTimeout(() => {
+    const field = document.querySelector(`[data-field-id="${fieldId}"]`) as HTMLElement | null;
+
+    if (!field) {
+      return;
+    }
+
+    field.scrollIntoView({ behavior: "smooth", block: "center" });
+
+    const candidate =
+      field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement
+        ? field
+        : (field.querySelector("input, textarea, select, button") as HTMLElement | null);
+
+    candidate?.focus();
+  }, 0);
 }
 
 export async function handleSubmitWorkItem(
@@ -56,36 +60,72 @@ export async function handleSubmitWorkItem(
   setResult(null);
   setShowValidationErrors(true);
 
-  const missingBaseFields = getMissingBaseFields(kind, formValues);
-
-  if (missingBaseFields.length > 0) {
-    setError(`Preencha os campos obrigatorios: ${missingBaseFields.join(", ")}.`);
-    return;
-  }
-
   const hasAnyStep = steps.some((step) => step.trim().length > 0);
   const hasSystemInfo = systemInfo.length > 0;
+  const hasAnyAttachment = attachments.length > 0;
   const hasAnyCriteria = (formValues.acceptanceCriteria ?? "")
     .split(/\r?\n/)
     .some((criterion) => criterion.replace(/^\s*\d+\.\s*/, "").trim().length > 0);
 
-  if (kind === "bug" && (!hasAnyStep || !hasSystemInfo)) {
-    const missing: string[] = [];
+  const missing: string[] = [];
+  let firstInvalidFieldId: string | null = null;
 
+  const registerMissing = (label: string, fieldId: string) => {
+    missing.push(label);
+
+    if (!firstInvalidFieldId) {
+      firstInvalidFieldId = fieldId;
+    }
+  };
+
+  const sendByValue = (formValues.sendBy ?? "").trim();
+
+  if (!sendByValue || sendByValue.toLowerCase() === "selecione...") {
+    registerMissing("Enviado por", "sendBy");
+  }
+  if (!(formValues.titleTag ?? "").trim()) {
+    registerMissing("Tag", "titleTag");
+  }
+
+  if (!(formValues.titleText ?? "").trim()) {
+    registerMissing("Titulo", "titleText");
+  }
+
+  if (!(formValues.description ?? "").trim()) {
+    registerMissing("Description", "description");
+  }
+
+  if (kind === "bug") {
     if (!hasAnyStep) {
-      missing.push("Steps");
+      registerMissing("Steps", "steps");
     }
 
     if (!hasSystemInfo) {
-      missing.push("System Info");
+      registerMissing("System Info", "systemInfo");
     }
 
-    setError(`Bug requer preenchimento de: ${missing.join(", ")}.`);
-    return;
+    if (!hasAnyAttachment) {
+      registerMissing("Anexos", "media");
+    }
   }
 
-  if (kind === "issue" && !hasAnyCriteria) {
-    setError("PBI requer ao menos 1 criterio em Acceptance Criteria.");
+  if (kind === "issue") {
+    if (!hasAnyCriteria) {
+      registerMissing("Acceptance Criteria", "acceptanceCriteria");
+    }
+
+    if (!hasAnyAttachment) {
+      registerMissing("Anexos", "media");
+    }
+  }
+
+  if (missing.length > 0) {
+    setError(`Campos obrigatorios: ${missing.join(", ")}.`);
+
+    if (firstInvalidFieldId) {
+      focusInvalidField(firstInvalidFieldId);
+    }
+
     return;
   }
 
@@ -130,8 +170,4 @@ export async function handleSubmitWorkItem(
     setIsSubmitting(false);
   }
 }
-
-
-
-
 
