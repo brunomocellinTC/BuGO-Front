@@ -96,7 +96,7 @@ function WorkItemFields({
                 { keyword: "E", text: "a home aparece" },
                 { keyword: "E", text: "clico no botao 'login'" },
                 { keyword: "E", text: "valido meu perfil" },
-                { keyword: "Ent�o", text: "vejo o Dashboard" }
+                { keyword: "Então", text: "vejo o Dashboard" }
               ]}
             />
           </div>
@@ -507,10 +507,10 @@ function WorkItemFields({
                 useBddTrigger: true,
                 items: [
                   { keyword: "Quando", text: "o usuario informar credenciais validas e confirmar o login" },
-                  { keyword: "Ent�o", text: "o sistema deve redirecionar para o Dashboard em ate 2 segundos" },
+                  { keyword: "Então", text: "o sistema deve redirecionar para o Dashboard em ate 2 segundos" },
                   { keyword: "E", text: "o nome do usuario autenticado deve aparecer no cabecalho" },
                   { keyword: "Quando", text: "as credenciais estiverem invalidas" },
-                  { keyword: "Ent�o", text: "deve exibir mensagem clara sem limpar os campos preenchidos" }
+                  { keyword: "Então", text: "deve exibir mensagem clara sem limpar os campos preenchidos" }
                 ]
               }
             }) : null}

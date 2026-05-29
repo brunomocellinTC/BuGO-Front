@@ -113,10 +113,6 @@ export async function handleSubmitWorkItem(
     if (!hasAnyCriteria) {
       registerMissing("Acceptance Criteria", "acceptanceCriteria");
     }
-
-    if (!hasAnyAttachment) {
-      registerMissing("Anexos", "media");
-    }
   }
 
   if (missing.length > 0) {
