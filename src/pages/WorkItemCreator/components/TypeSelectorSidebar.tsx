@@ -160,7 +160,7 @@ function TypeSelectorSidebar({
 
           {kind === "bug" && steps.some((step) => step.trim()) ? (
             <div>
-              <p className="text-[11px] uppercase tracking-[0.25em] text-slate-400">Steps *</p>
+              <p className="text-[11px] uppercase tracking-[0.25em] text-slate-400">Steps</p>
               <div className="mt-1 space-y-1">
                 {steps.filter((step) => step.trim()).map((step, index) => {
                   const bdd = splitBddStep(step);
