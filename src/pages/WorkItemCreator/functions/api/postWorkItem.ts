@@ -1,12 +1,10 @@
 import { SubmitResponse } from "../../types/workItemCreatorTypes";
 import { getApiBaseUrl } from "./getApiBaseUrl";
+import { fetchWithAuth } from "./authHeaders";
 
 export async function postWorkItem(payload: unknown) {
-  const response = await fetch(`${getApiBaseUrl()}/api/work-items`, {
+  const response = await fetchWithAuth(`${getApiBaseUrl()}/api/work-items`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
     body: JSON.stringify(payload)
   });
 
