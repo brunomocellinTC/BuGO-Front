@@ -43,8 +43,11 @@ function AppContent() {
 }
 
 function App() {
+  // Usar basename para GitHub Pages quando em produção
+  const basename = import.meta.env.VITE_BASENAME || "/";
+
   return (
-    <Router>
+    <Router basename={basename}>
       <AuthProvider>
         <AppContent />
       </AuthProvider>
