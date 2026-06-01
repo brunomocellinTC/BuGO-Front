@@ -73,6 +73,21 @@ function WorkItemFields({
       ? "border-red-400 bg-red-50 text-red-950 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100"
       : "";
 
+    // Campo especial para sendBy: readonly e cinzento
+    if (field.id === "sendBy") {
+      return (
+        <label key={field.id} data-field-id={field.id} tabIndex={-1} className="grid gap-1">
+          <span className="text-sm font-semibold text-white">{fieldLabel}</span>
+          <input
+            type="text"
+            value={value}
+            disabled
+            className="input-base cursor-not-allowed bg-slate-700 text-slate-300 opacity-60"
+          />
+        </label>
+      );
+    }
+
     const bugStepsInvalid =
       kind === "bug" && showValidationErrors && field.type === "steps" && !steps.some((step) => step.trim());
     const bugSystemInfoInvalid =

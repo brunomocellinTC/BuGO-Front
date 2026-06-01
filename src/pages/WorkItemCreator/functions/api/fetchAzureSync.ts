@@ -1,8 +1,9 @@
 import { AzureSyncResponse } from "../../types/workItemCreatorTypes";
 import { getApiBaseUrl } from "./getApiBaseUrl";
+import { fetchWithAuth } from "./authHeaders";
 
 export async function fetchAzureSync() {
-  const response = await fetch(`${getApiBaseUrl()}/api/azure-sync`);
+  const response = await fetchWithAuth(`${getApiBaseUrl()}/api/azure-sync`);
   const data = await response.json();
 
   if (!response.ok) {

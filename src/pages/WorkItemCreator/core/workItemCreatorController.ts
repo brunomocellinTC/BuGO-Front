@@ -4,6 +4,11 @@ import { fetchFormConfig } from "../functions/api/fetchFormConfig";
 import { loadStoredSystemInfo } from "../functions/utils/loadStoredSystemInfo";
 import { AttachmentDraft, AzureSyncResponse, FormConfigResponse, SubmitResponse, SystemInfoItem, WorkItemKind } from "../types/workItemCreatorTypes";
 
+interface User {
+  email: string;
+  name: string;
+}
+
 export const workItemCreatorController = () => {
   const [config, setConfig] = useState<FormConfigResponse | null>(null);
   const [syncData, setSyncData] = useState<AzureSyncResponse | null>(null);
@@ -19,7 +24,21 @@ export const workItemCreatorController = () => {
   const [result, setResult] = useState<SubmitResponse | null>(null);
   const [isCheckingAzureAuth, setIsCheckingAzureAuth] = useState(false);
   const [azureAuthFeedback, setAzureAuthFeedback] = useState<{ tone: "success" | "error"; message: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const stepInputRefs = useRef<Array<HTMLInputElement | null>>([]);
+
+  // Carregar dados do usuário autenticado
+  useEffect(() => {
+    const userStr = localStorage.getItem("app_user");
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        setCurrentUser(user);
+      } catch (err) {
+        console.error("Falha ao carregar usuário:", err);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     async function loadData() {
@@ -38,7 +57,9 @@ export const workItemCreatorController = () => {
         ...formConfigData.defaults,
         epicId: firstEpic ? String(firstEpic.id) : "",
         featureId: firstFeature ? String(firstFeature.id) : "",
-        parentId: firstParent ? String(firstParent.id) : ""
+        parentId: firstParent ? String(firstParent.id) : "",
+        // Pré-preencher sendBy com nome do usuário logado
+        sendBy: currentUser?.name || ""
       });
       setSteps([""]);
       setAttachments([]);
@@ -50,7 +71,7 @@ export const workItemCreatorController = () => {
         setError(message);
       })
       .finally(() => setIsSyncing(false));
-  }, []);
+  }, [currentUser]);
 
   const fields = useMemo(() => {
     if (!config) {
@@ -105,9 +126,9 @@ export const workItemCreatorController = () => {
     isCheckingAzureAuth,
     setIsCheckingAzureAuth,
     azureAuthFeedback,
-    setAzureAuthFeedback
+    setAzureAuthFeedback,
+    currentUser
   };
 
   return { state };
 };
-
