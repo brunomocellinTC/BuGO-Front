@@ -24,6 +24,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const basename = import.meta.env.VITE_BASENAME || "/";
+  const appUrl = `${window.location.origin}${basename}`;
+
   // Carregar token do localStorage ao montar
   useEffect(() => {
     const storedToken = localStorage.getItem("app_token");
@@ -33,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         setAccessToken(storedToken);
         setUser(JSON.parse(storedUser));
-      } catch (err) {
+      } catch {
         localStorage.removeItem("app_token");
         localStorage.removeItem("app_user");
       }
@@ -47,7 +50,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
 
     try {
-      // Validar variáveis de ambiente
       const clientId = import.meta.env.VITE_AZURE_CLIENT_ID;
       const tenantId = import.meta.env.VITE_AZURE_TENANT_ID;
 
@@ -58,13 +60,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         );
       }
 
-      // Redirecionar para Microsoft login
-      // Usando o endpoint do Azure com parâmetros corretos
       const redirectUri =
         import.meta.env.VITE_REDIRECT_URI ||
-        `${window.location.origin}${import.meta.env.VITE_BASENAME || "/"}auth/callback`;
-        
-      const authUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize?` +
+        `${appUrl}auth/callback`;
+
+      const authUrl =
+        `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize?` +
         `client_id=${clientId}&` +
         `response_type=token&` +
         `redirect_uri=${encodeURIComponent(redirectUri)}&` +
@@ -73,7 +74,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       window.location.href = authUrl;
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Falha ao fazer login";
+      const message =
+        err instanceof Error ? err.message : "Falha ao fazer login";
+
       setError(message);
       setIsLoading(false);
     }
@@ -82,16 +85,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null);
     setAccessToken(null);
+
     localStorage.removeItem("app_token");
     localStorage.removeItem("app_user");
 
-    // Logout do Azure
     const tenantId = import.meta.env.VITE_AZURE_TENANT_ID;
-    const redirectBase =
-      `${window.location.origin}${import.meta.env.VITE_BASENAME || "/"}`;
 
     window.location.href =
-      `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/logout?post_logout_redirect_uri=${encodeURIComponent(redirectBase)}`;
+      `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/logout?post_logout_redirect_uri=${encodeURIComponent(appUrl)}`;
   };
 
   return (
@@ -113,8 +114,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
+
   if (!context) {
     throw new Error("useAuth deve ser usado dentro de AuthProvider");
   }
+
   return context;
 }
