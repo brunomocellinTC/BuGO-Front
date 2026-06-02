@@ -60,8 +60,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Redirecionar para Microsoft login
       // Usando o endpoint do Azure com parâmetros corretos
-      const redirectUri = import.meta.env.VITE_REDIRECT_URI || `${window.location.origin}/auth/callback`;
-
+      const redirectUri =
+        import.meta.env.VITE_REDIRECT_URI ||
+        `${window.location.origin}${import.meta.env.VITE_BASENAME || "/"}auth/callback`;
+        
       const authUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize?` +
         `client_id=${clientId}&` +
         `response_type=token&` +
@@ -85,7 +87,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Logout do Azure
     const tenantId = import.meta.env.VITE_AZURE_TENANT_ID;
-    window.location.href = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/logout?post_logout_redirect_uri=${encodeURIComponent(window.location.origin)}`;
+    const redirectBase =
+      `${window.location.origin}${import.meta.env.VITE_BASENAME || "/"}`;
+
+    window.location.href =
+      `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/logout?post_logout_redirect_uri=${encodeURIComponent(redirectBase)}`;
   };
 
   return (
