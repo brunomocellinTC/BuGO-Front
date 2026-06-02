@@ -1,6 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
 import { AzureEpic } from "../../types/workItemCreatorTypes";
-import { handleUpdateParent } from "./handleUpdateParent";
 
 export async function handleUpdateFeature(
   featureId: string,
@@ -8,21 +7,35 @@ export async function handleUpdateFeature(
   setFormValues: Dispatch<SetStateAction<Record<string, string>>>,
   setError: Dispatch<SetStateAction<string | null>>
 ) {
-  setFormValues((current) => {
-    const feature = selectedEpic?.features.find((item) => String(item.id) === featureId);
-    const firstParent = feature?.children[0];
+  try {
+    setFormValues((current) => {
+      const feature = selectedEpic?.features.find(
+        (item) => String(item.id) === featureId
+      );
 
-    return {
-      ...current,
-      featureId,
-      parentId: firstParent ? String(firstParent.id) : ""
-    };
-  });
+      // mantém parent atual se ainda existir
+      const currentParentStillExists = feature?.children.some(
+        (child) => String(child.id) === current.parentId
+      );
 
-  const feature = selectedEpic?.features.find((item) => String(item.id) === featureId);
-  const firstParent = feature?.children[0];
+      return {
+        ...current,
+        featureId,
 
-  if (firstParent) {
-    await handleUpdateParent(String(firstParent.id), setFormValues, setError);
+        // NÃO resetar automaticamente para o primeiro item
+        parentId: currentParentStillExists
+          ? current.parentId
+          : feature?.children?.[0]
+            ? String(feature.children[0].id)
+            : ""
+      };
+    });
+  } catch (refreshError) {
+    const message =
+      refreshError instanceof Error
+        ? refreshError.message
+        : "Failed to refresh feature";
+
+    setError(message);
   }
 }
