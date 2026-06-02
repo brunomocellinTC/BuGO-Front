@@ -5,6 +5,20 @@ import { ChakraProvider } from "@chakra-ui/react";
 import App from "./App";
 import "./styles.css";
 
+const redirect = sessionStorage.redirect;
+
+if (redirect) {
+  delete sessionStorage.redirect;
+
+  const url = new URL(redirect);
+
+  window.history.replaceState(
+    null,
+    "",
+    url.pathname + url.search + url.hash
+  );
+}
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ChakraProvider>
