@@ -20,36 +20,56 @@ interface User {
 
 export const workItemCreatorController = () => {
   const [config, setConfig] = useState<FormConfigResponse | null>(null);
-  const [syncData, setSyncData] = useState<AzureSyncResponse | null>(null);
 
-  const [kind, setKind] = useState<WorkItemKind>("bug");
+  const [syncData, setSyncData] =
+    useState<AzureSyncResponse | null>(null);
 
-  const [formValues, setFormValues] = useState<Record<string, string>>({});
-  const [steps, setSteps] = useState<string[]>([""]);
-  const [attachments, setAttachments] = useState<AttachmentDraft[]>([]);
+  const [kind, setKind] =
+    useState<WorkItemKind>("bug");
 
-  const [systemInfo, setSystemInfo] = useState<SystemInfoItem[]>(
-    () => loadStoredSystemInfo()
-  );
+  const [formValues, setFormValues] =
+    useState<Record<string, string>>({});
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showValidationErrors, setShowValidationErrors] = useState(false);
+  const [steps, setSteps] =
+    useState<string[]>([""]);
 
-  const [isSyncing, setIsSyncing] = useState(true);
+  const [attachments, setAttachments] =
+    useState<AttachmentDraft[]>([]);
 
-  const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<SubmitResponse | null>(null);
+  const [systemInfo, setSystemInfo] =
+    useState<SystemInfoItem[]>(
+      () => loadStoredSystemInfo()
+    );
 
-  const [isCheckingAzureAuth, setIsCheckingAzureAuth] = useState(false);
+  const [isSubmitting, setIsSubmitting] =
+    useState(false);
 
-  const [azureAuthFeedback, setAzureAuthFeedback] = useState<{
-    tone: "success" | "error";
-    message: string;
-  } | null>(null);
+  const [showValidationErrors, setShowValidationErrors] =
+    useState(false);
 
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isSyncing, setIsSyncing] =
+    useState(true);
 
-  const stepInputRefs = useRef<Array<HTMLInputElement | null>>([]);
+  const [error, setError] =
+    useState<string | null>(null);
+
+  const [result, setResult] =
+    useState<SubmitResponse | null>(null);
+
+  const [isCheckingAzureAuth, setIsCheckingAzureAuth] =
+    useState(false);
+
+  const [azureAuthFeedback, setAzureAuthFeedback] =
+    useState<{
+      tone: "success" | "error";
+      message: string;
+    } | null>(null);
+
+  const [currentUser, setCurrentUser] =
+    useState<User | null>(null);
+
+  const stepInputRefs =
+    useRef<Array<HTMLInputElement | null>>([]);
 
   /**
    * Carrega usuário autenticado
@@ -57,7 +77,8 @@ export const workItemCreatorController = () => {
   useEffect(() => {
     const loadUser = () => {
       try {
-        const userStr = localStorage.getItem("app_user");
+        const userStr =
+          localStorage.getItem("app_user");
 
         if (!userStr) {
           return;
@@ -69,27 +90,32 @@ export const workItemCreatorController = () => {
           setCurrentUser(parsedUser);
         }
       } catch (err) {
-        console.error("Falha ao carregar usuário:", err);
+        console.error(
+          "Falha ao carregar usuário:",
+          err
+        );
       }
     };
 
     loadUser();
 
     /**
-     * Alguns navegadores / fluxos OAuth
-     * terminam o login depois do primeiro render.
-     * Isso evita precisar dar F5.
+     * Alguns navegadores/finalizações OAuth
+     * terminam após primeiro render.
      */
     window.addEventListener("focus", loadUser);
 
     return () => {
-      window.removeEventListener("focus", loadUser);
+      window.removeEventListener(
+        "focus",
+        loadUser
+      );
     };
   }, []);
 
   /**
-   * Sempre sincroniza sendBy
-   * quando currentUser mudar
+   * Mantém sendBy sincronizado
+   * SEM resetar o restante do form
    */
   useEffect(() => {
     if (!currentUser?.name) {
@@ -103,22 +129,24 @@ export const workItemCreatorController = () => {
   }, [currentUser]);
 
   /**
-   * Carrega config + sync
+   * Carrega config + Azure sync
    */
   useEffect(() => {
     async function loadData() {
-      const [formConfigData, azureSyncData] = await Promise.all([
-        fetchFormConfig(),
-        fetchAzureSync()
-      ]);
+      const [formConfigData, azureSyncData] =
+        await Promise.all([
+          fetchFormConfig(),
+          fetchAzureSync()
+        ]);
 
-      const firstEpic = azureSyncData.epics[0];
+      const firstEpic =
+        azureSyncData.epics[0];
 
-      const firstFeature = firstEpic?.features[0];
+      const firstFeature =
+        firstEpic?.features[0];
 
       /**
-       * Filtra apenas itens válidos
-       * para parent
+       * Apenas itens válidos
        */
       const validParents =
         firstFeature?.children.filter(
@@ -127,40 +155,73 @@ export const workItemCreatorController = () => {
             item.workItemType !== "Task"
         ) ?? [];
 
-      const firstParent = validParents[0];
+      const firstParent =
+        validParents[0];
 
       setConfig(formConfigData);
+
       setSyncData(azureSyncData);
-      setFormValues((current) => ({
-        ...current,
-        ...formConfigData.defaults,
 
-        epicId: firstEpic
-          ? String(firstEpic.id)
-          : "",
+      /**
+       * NÃO resetar formulário
+       * se já existir conteúdo.
+       */
+      setFormValues((current) => {
+        const alreadyInitialized =
+          Object.keys(current).length > 0;
 
-        featureId: firstFeature
-          ? String(firstFeature.id)
-          : "",
+        if (alreadyInitialized) {
+          return {
+            ...current,
 
-        parentId: firstParent
-          ? String(firstParent.id)
-          : "",
+            /**
+             * Atualiza apenas sendBy
+             */
+            sendBy:
+              currentUser?.name ||
+              current.sendBy ||
+              ""
+          };
+        }
 
         /**
-         * IMPORTANTÍSSIMO:
-         * usa SEMPRE o nome atual do usuário
-         * autenticado e não sobrescreve
-         * com vazio
+         * Primeira carga apenas
          */
-        sendBy:
-          currentUser?.name ||
-          current.sendBy ||
-          ""
-      }));
+        return {
+          ...formConfigData.defaults,
 
-      setSteps([""]);
-      setAttachments([]);
+          epicId: firstEpic
+            ? String(firstEpic.id)
+            : "",
+
+          featureId: firstFeature
+            ? String(firstFeature.id)
+            : "",
+
+          parentId: firstParent
+            ? String(firstParent.id)
+            : "",
+
+          sendBy:
+            currentUser?.name || ""
+        };
+      });
+
+      /**
+       * Só resetar steps/anexos
+       * na primeira carga
+       */
+      setSteps((current) =>
+        current.length > 0
+          ? current
+          : [""]
+      );
+
+      setAttachments((current) =>
+        current.length > 0
+          ? current
+          : []
+      );
     }
 
     loadData()
@@ -193,7 +254,8 @@ export const workItemCreatorController = () => {
     () =>
       syncData?.epics.find(
         (epic) =>
-          String(epic.id) === formValues.epicId
+          String(epic.id) ===
+          formValues.epicId
       ) ?? syncData?.epics[0],
     [syncData, formValues.epicId]
   );
@@ -202,14 +264,17 @@ export const workItemCreatorController = () => {
     () =>
       selectedEpic?.features.find(
         (feature) =>
-          String(feature.id) === formValues.featureId
+          String(feature.id) ===
+          formValues.featureId
       ) ?? selectedEpic?.features[0],
     [selectedEpic, formValues.featureId]
   );
 
   const parentOptions = useMemo(
     () =>
-      (selectedFeature?.children ?? []).filter(
+      (
+        selectedFeature?.children ?? []
+      ).filter(
         (item) =>
           item.workItemType !== "Bug" &&
           item.workItemType !== "Task"
@@ -219,35 +284,54 @@ export const workItemCreatorController = () => {
 
   const state = {
     config,
+
     syncData,
+
     kind,
     setKind,
+
     formValues,
     setFormValues,
+
     steps,
     setSteps,
+
     attachments,
     setAttachments,
+
     systemInfo,
     setSystemInfo,
+
     isSubmitting,
     setIsSubmitting,
+
     showValidationErrors,
     setShowValidationErrors,
+
     isSyncing,
+
     error,
     setError,
+
     result,
     setResult,
+
     stepInputRefs,
+
     fields,
+
     selectedEpic,
+
     parentOptions,
+
     setSyncData,
+
     isCheckingAzureAuth,
     setIsCheckingAzureAuth,
+
     azureAuthFeedback,
     setAzureAuthFeedback,
+
     currentUser
   };
 
