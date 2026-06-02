@@ -48,19 +48,39 @@ export const workItemCreatorController = () => {
       ]);
 
       const firstEpic = azureSyncData.epics[0];
+
       const firstFeature = firstEpic?.features[0];
-      const firstParent = firstFeature?.children[0];
+
+      // filtrar apenas itens válidos
+      const validParents =
+        firstFeature?.children.filter(
+          (item) =>
+            item.workItemType !== "Bug" &&
+            item.workItemType !== "Task"
+        ) ?? [];
+
+      const firstParent = validParents[0];
 
       setConfig(formConfigData);
       setSyncData(azureSyncData);
+
       setFormValues({
         ...formConfigData.defaults,
+
         epicId: firstEpic ? String(firstEpic.id) : "",
-        featureId: firstFeature ? String(firstFeature.id) : "",
-        parentId: firstParent ? String(firstParent.id) : "",
-        // Pré-preencher sendBy com nome do usuário logado
+
+        featureId: firstFeature
+          ? String(firstFeature.id)
+          : "",
+
+        parentId: firstParent
+          ? String(firstParent.id)
+          : "",
+
+        // usar nome do usuário autenticado
         sendBy: currentUser?.name || ""
       });
+
       setSteps([""]);
       setAttachments([]);
     }
