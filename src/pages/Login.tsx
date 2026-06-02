@@ -22,7 +22,8 @@ export function LoginPage() {
     // Se já está autenticado, redireciona
     const token = localStorage.getItem("app_token");
     if (token && !error) {
-      window.location.href = "/";
+      const basename = import.meta.env.VITE_BASENAME || "/";
+      window.location.href = basename;
     }
   }, [error]);
 
