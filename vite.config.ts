@@ -5,7 +5,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, ".", "");
 
   return {
-    base: env.VITE_BASENAME || "/",
+    base: env.VITE_BASENAME || "/BuGO-Front/",
     plugins: [react()],
     server: {
       port: 5173,
