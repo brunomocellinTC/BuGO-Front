@@ -8,20 +8,25 @@ export function AuthCallbackPage() {
   useEffect(() => {
     async function handleCallback() {
       try {
-        // Extrair token da URL (#access_token=...)
+        // Extrair token da URL
         const hash = window.location.hash;
 
         const params = new URLSearchParams(
-          hash.startsWith("#") ? hash.substring(1) : hash
+          hash.startsWith("#")
+            ? hash.substring(1)
+            : hash
         );
 
-        const microsoftToken = params.get("access_token");
+        const microsoftToken =
+          params.get("access_token");
 
         if (!microsoftToken) {
-          throw new Error("Token não recebido do Microsoft");
+          throw new Error(
+            "Token não recebido do Microsoft"
+          );
         }
 
-        // Enviar token Microsoft para backend
+        // trocar token Microsoft por JWT da API
         const response = await fetch(
           `${getApiBaseUrl()}/api/auth/microsoft-token`,
           {
@@ -45,7 +50,7 @@ export function AuthCallbackPage() {
 
         const data = await response.json();
 
-        // Salvar autenticação
+        // salvar auth
         localStorage.setItem(
           "app_token",
           data.access_token
@@ -56,38 +61,36 @@ export function AuthCallbackPage() {
           JSON.stringify(data.user)
         );
 
-        // IMPORTANTE:
-        // usar basename do GitHub Pages
-        const basename =
-          import.meta.env.VITE_BASENAME || "/";
-
         // limpar hash/token da URL
         window.history.replaceState(
           {},
           document.title,
-          basename
+          window.location.pathname
         );
 
-        // reload correto
+        // usar basename corretamente
+        const basename =
+          import.meta.env.VITE_BASENAME || "/";
+
+        // IMPORTANTE:
+        // NÃO usar "/"
+        // NÃO usar navigate("/")
+        // GitHub Pages precisa basename completo
         window.location.replace(basename);
 
       } catch (err) {
+        console.error(err);
+
+        localStorage.removeItem("app_token");
+        localStorage.removeItem("app_user");
+
         const message =
           err instanceof Error
             ? err.message
             : "Erro na autenticação";
 
-        console.error(
-          "[Auth Callback Error]",
-          message
-        );
-
-        localStorage.removeItem("app_token");
-        localStorage.removeItem("app_user");
-
         navigate(
-          "/login?error=" +
-            encodeURIComponent(message)
+          `/login?error=${encodeURIComponent(message)}`
         );
       }
     }
