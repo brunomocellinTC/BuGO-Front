@@ -10,12 +10,10 @@ const redirect = sessionStorage.redirect;
 if (redirect) {
   delete sessionStorage.redirect;
 
-  const url = new URL(redirect);
-
   window.history.replaceState(
     null,
     "",
-    url.pathname + url.search + url.hash
+    redirect
   );
 }
 
