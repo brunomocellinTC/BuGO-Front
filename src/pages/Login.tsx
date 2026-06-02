@@ -5,11 +5,12 @@ import { useAuth } from "../context/AuthContext";
 export function LoginPage() {
   const [searchParams] = useSearchParams();
   const { login, isLoading } = useAuth();
+
   const [configError, setConfigError] = useState<string | null>(null);
+
   const error = searchParams.get("error");
 
   useEffect(() => {
-    // Verificar se as variáveis estão configuradas
     const clientId = import.meta.env.VITE_AZURE_CLIENT_ID;
     const tenantId = import.meta.env.VITE_AZURE_TENANT_ID;
 
@@ -19,10 +20,11 @@ export function LoginPage() {
       );
     }
 
-    // Se já está autenticado, redireciona
     const token = localStorage.getItem("app_token");
+
     if (token && !error) {
       const basename = import.meta.env.VITE_BASENAME || "/";
+
       window.location.href = basename;
     }
   }, [error]);
@@ -33,17 +35,21 @@ export function LoginPage() {
 
       <div className="relative mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-4">
         <div className="w-full space-y-8">
-          {/* Logo/Título */}
           <div className="text-center space-y-2">
             <h1 className="text-4xl font-bold">BuGO</h1>
-            <p className="text-slate-400">Sistema de Reportagem de Bugs</p>
+
+            <p className="text-slate-400">
+              Sistema de Reportagem de Bugs
+            </p>
           </div>
 
-          {/* Card de Login */}
           <div className="rounded-2xl border border-slate-700/50 bg-slate-900/50 p-8 backdrop-blur-sm">
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-semibold mb-2">Login</h2>
+                <h2 className="text-xl font-semibold mb-2">
+                  Login
+                </h2>
+
                 <p className="text-sm text-slate-400">
                   Faça login com sua conta Microsoft da empresa
                 </p>
@@ -51,13 +57,17 @@ export function LoginPage() {
 
               {configError && (
                 <div className="rounded-lg border border-yellow-500/50 bg-yellow-500/10 p-4">
-                  <p className="text-sm text-yellow-200 font-mono">{configError}</p>
+                  <p className="text-sm text-yellow-200 font-mono">
+                    {configError}
+                  </p>
                 </div>
               )}
 
               {error && (
                 <div className="rounded-lg border border-red-500/50 bg-red-500/10 p-3">
-                  <p className="text-sm text-red-200">{error}</p>
+                  <p className="text-sm text-red-200">
+                    {error}
+                  </p>
                 </div>
               )}
 
@@ -75,9 +85,14 @@ export function LoginPage() {
                   </>
                 ) : configError ? (
                   <>
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
                       <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
                     </svg>
+
                     Configurar .env Primeiro
                   </>
                 ) : (
@@ -89,6 +104,7 @@ export function LoginPage() {
                     >
                       <path d="M11.4 24H0V12.6h11.4V24ZM24 24H12.6v-11.4H24V24ZM11.4 11.4H0V0h11.4v11.4Zm12.6 0H12.6V0H24v11.4Z" />
                     </svg>
+
                     Entrar com Microsoft
                   </>
                 )}
@@ -100,11 +116,10 @@ export function LoginPage() {
             </div>
           </div>
 
-          {/* Info Footer */}
           <div className="rounded-lg bg-slate-800/30 p-4 text-xs text-slate-400">
             <p>
-              ℹ️ Você será redirecionado para fazer login com sua conta Microsoft corporativa. Apenas
-              endereços de email da empresa serão autorizados.
+              ℹ️ Você será redirecionado para fazer login com sua conta Microsoft corporativa.
+              Apenas endereços de email da empresa serão autorizados.
             </p>
           </div>
         </div>
