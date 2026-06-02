@@ -26,11 +26,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const basename = import.meta.env.VITE_BASENAME || "/";
 
-  const normalizedBase =
-    basename.endsWith("/") ? basename : `${basename}/`;
-
-  const appUrl = `${window.location.origin}${normalizedBase}`;
-
   // Carregar token do localStorage ao montar
   useEffect(() => {
     const storedToken = localStorage.getItem("app_token");
@@ -64,11 +59,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         );
       }
 
-      // IMPORTANTE:
-      // GitHub Pages precisa do callback dentro do basename
-      const redirectUri =
-        import.meta.env.VITE_REDIRECT_URI ||
-        `${appUrl}auth/callback`;
+      // USAR EXATAMENTE A URL REGISTRADA NO AZURE
+      const redirectUri = import.meta.env.VITE_REDIRECT_URI;
 
       const authUrl =
         `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize?` +
@@ -98,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const tenantId = import.meta.env.VITE_AZURE_TENANT_ID;
 
     window.location.href =
-      `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/logout?post_logout_redirect_uri=${encodeURIComponent(appUrl)}`;
+      `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/logout?post_logout_redirect_uri=${encodeURIComponent(window.location.origin + basename)}`;
   };
 
   return (
