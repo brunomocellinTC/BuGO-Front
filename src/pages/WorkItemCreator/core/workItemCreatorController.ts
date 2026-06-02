@@ -1,8 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+
 import { fetchAzureSync } from "../functions/api/fetchAzureSync";
 import { fetchFormConfig } from "../functions/api/fetchFormConfig";
 import { loadStoredSystemInfo } from "../functions/utils/loadStoredSystemInfo";
-import { AttachmentDraft, AzureSyncResponse, FormConfigResponse, SubmitResponse, SystemInfoItem, WorkItemKind } from "../types/workItemCreatorTypes";
+
+import {
+  AttachmentDraft,
+  AzureSyncResponse,
+  FormConfigResponse,
+  SubmitResponse,
+  SystemInfoItem,
+  WorkItemKind
+} from "../types/workItemCreatorTypes";
 
 interface User {
   email: string;
@@ -12,34 +21,90 @@ interface User {
 export const workItemCreatorController = () => {
   const [config, setConfig] = useState<FormConfigResponse | null>(null);
   const [syncData, setSyncData] = useState<AzureSyncResponse | null>(null);
+
   const [kind, setKind] = useState<WorkItemKind>("bug");
+
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [steps, setSteps] = useState<string[]>([""]);
   const [attachments, setAttachments] = useState<AttachmentDraft[]>([]);
-  const [systemInfo, setSystemInfo] = useState<SystemInfoItem[]>(() => loadStoredSystemInfo());
+
+  const [systemInfo, setSystemInfo] = useState<SystemInfoItem[]>(
+    () => loadStoredSystemInfo()
+  );
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showValidationErrors, setShowValidationErrors] = useState(false);
+
   const [isSyncing, setIsSyncing] = useState(true);
+
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<SubmitResponse | null>(null);
+
   const [isCheckingAzureAuth, setIsCheckingAzureAuth] = useState(false);
-  const [azureAuthFeedback, setAzureAuthFeedback] = useState<{ tone: "success" | "error"; message: string } | null>(null);
+
+  const [azureAuthFeedback, setAzureAuthFeedback] = useState<{
+    tone: "success" | "error";
+    message: string;
+  } | null>(null);
+
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+
   const stepInputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
-  // Carregar dados do usuário autenticado
+  /**
+   * Carrega usuário autenticado
+   */
   useEffect(() => {
-    const userStr = localStorage.getItem("app_user");
-    if (userStr) {
+    const loadUser = () => {
       try {
-        const user = JSON.parse(userStr);
-        setCurrentUser(user);
+        const userStr = localStorage.getItem("app_user");
+
+        if (!userStr) {
+          return;
+        }
+
+        const parsedUser = JSON.parse(userStr);
+
+        if (parsedUser?.name) {
+          setCurrentUser(parsedUser);
+        }
       } catch (err) {
         console.error("Falha ao carregar usuário:", err);
       }
-    }
+    };
+
+    loadUser();
+
+    /**
+     * Alguns navegadores / fluxos OAuth
+     * terminam o login depois do primeiro render.
+     * Isso evita precisar dar F5.
+     */
+    window.addEventListener("focus", loadUser);
+
+    return () => {
+      window.removeEventListener("focus", loadUser);
+    };
   }, []);
 
+  /**
+   * Sempre sincroniza sendBy
+   * quando currentUser mudar
+   */
+  useEffect(() => {
+    if (!currentUser?.name) {
+      return;
+    }
+
+    setFormValues((current) => ({
+      ...current,
+      sendBy: currentUser.name
+    }));
+  }, [currentUser]);
+
+  /**
+   * Carrega config + sync
+   */
   useEffect(() => {
     async function loadData() {
       const [formConfigData, azureSyncData] = await Promise.all([
@@ -51,7 +116,10 @@ export const workItemCreatorController = () => {
 
       const firstFeature = firstEpic?.features[0];
 
-      // filtrar apenas itens válidos
+      /**
+       * Filtra apenas itens válidos
+       * para parent
+       */
       const validParents =
         firstFeature?.children.filter(
           (item) =>
@@ -63,11 +131,13 @@ export const workItemCreatorController = () => {
 
       setConfig(formConfigData);
       setSyncData(azureSyncData);
-
-      setFormValues({
+      setFormValues((current) => ({
+        ...current,
         ...formConfigData.defaults,
 
-        epicId: firstEpic ? String(firstEpic.id) : "",
+        epicId: firstEpic
+          ? String(firstEpic.id)
+          : "",
 
         featureId: firstFeature
           ? String(firstFeature.id)
@@ -77,9 +147,17 @@ export const workItemCreatorController = () => {
           ? String(firstParent.id)
           : "",
 
-        // usar nome do usuário autenticado
-        sendBy: currentUser?.name || ""
-      });
+        /**
+         * IMPORTANTÍSSIMO:
+         * usa SEMPRE o nome atual do usuário
+         * autenticado e não sobrescreve
+         * com vazio
+         */
+        sendBy:
+          currentUser?.name ||
+          current.sendBy ||
+          ""
+      }));
 
       setSteps([""]);
       setAttachments([]);
@@ -87,10 +165,16 @@ export const workItemCreatorController = () => {
 
     loadData()
       .catch((loadError: unknown) => {
-        const message = loadError instanceof Error ? loadError.message : "Failed to load form";
+        const message =
+          loadError instanceof Error
+            ? loadError.message
+            : "Failed to load form";
+
         setError(message);
       })
-      .finally(() => setIsSyncing(false));
+      .finally(() => {
+        setIsSyncing(false);
+      });
   }, [currentUser]);
 
   const fields = useMemo(() => {
@@ -98,21 +182,38 @@ export const workItemCreatorController = () => {
       return [];
     }
 
-    return kind === "bug" ? config.bugFields : kind === "issue" ? config.issueFields : config.taskFields;
+    return kind === "bug"
+      ? config.bugFields
+      : kind === "issue"
+        ? config.issueFields
+        : config.taskFields;
   }, [config, kind]);
 
   const selectedEpic = useMemo(
-    () => syncData?.epics.find((epic) => String(epic.id) === formValues.epicId) ?? syncData?.epics[0],
+    () =>
+      syncData?.epics.find(
+        (epic) =>
+          String(epic.id) === formValues.epicId
+      ) ?? syncData?.epics[0],
     [syncData, formValues.epicId]
   );
 
   const selectedFeature = useMemo(
-    () => selectedEpic?.features.find((feature) => String(feature.id) === formValues.featureId) ?? selectedEpic?.features[0],
+    () =>
+      selectedEpic?.features.find(
+        (feature) =>
+          String(feature.id) === formValues.featureId
+      ) ?? selectedEpic?.features[0],
     [selectedEpic, formValues.featureId]
   );
 
   const parentOptions = useMemo(
-    () => (selectedFeature?.children ?? []).filter((item) => item.workItemType !== "Bug" && item.workItemType !== "Task"),
+    () =>
+      (selectedFeature?.children ?? []).filter(
+        (item) =>
+          item.workItemType !== "Bug" &&
+          item.workItemType !== "Task"
+      ),
     [selectedFeature]
   );
 
