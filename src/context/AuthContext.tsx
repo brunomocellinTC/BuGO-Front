@@ -25,7 +25,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   const basename = import.meta.env.VITE_BASENAME || "/";
-  const appUrl = `${window.location.origin}${basename}`;
+
+  const normalizedBase =
+    basename.endsWith("/") ? basename : `${basename}/`;
+
+  const appUrl = `${window.location.origin}${normalizedBase}`;
 
   // Carregar token do localStorage ao montar
   useEffect(() => {
@@ -60,6 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         );
       }
 
+      // IMPORTANTE:
+      // GitHub Pages precisa do callback dentro do basename
       const redirectUri =
         import.meta.env.VITE_REDIRECT_URI ||
         `${appUrl}auth/callback`;

@@ -5,15 +5,16 @@ import { ChakraProvider } from "@chakra-ui/react";
 import App from "./App";
 import "./styles.css";
 
-const redirect = sessionStorage.redirect;
+const params = new URLSearchParams(window.location.search);
+const redirect = params.get("redirect");
 
 if (redirect) {
-  delete sessionStorage.redirect;
+  const decoded = decodeURIComponent(redirect);
 
   window.history.replaceState(
     null,
     "",
-    redirect
+    decoded
   );
 }
 
