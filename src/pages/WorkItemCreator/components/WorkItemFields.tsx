@@ -70,7 +70,7 @@ function WorkItemFields({
     const fieldLabel = options?.label ?? field.label;
     const popover = options?.popover;
     const invalidClass = isFieldInvalid(field.id, field.required)
-      ? "border-red-400 bg-red-50 text-red-950 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100"
+      ? "border-red-400 bg-red-950 text-red-950 placeholder:text-red-300 focus:border-red-500 focus:ring-red-100"
       : "";
 
     // Campo especial para sendBy: readonly e cinzento
@@ -328,11 +328,11 @@ function WorkItemFields({
                   const checked = isSystemInfoSelected("desktop", option.value);
 
                   return (
-                    <div key={option.value} className="inline-grid w-[122px] grid-cols-[56px_54px] items-center justify-start gap-2 rounded-lg border border-slate-200 bg-white px-1 py-1 2xl:w-fit 2xl:grid-cols-[82px_56px]">
+                    <div key={option.value} className="inline-grid w-32 grid-cols-[56px_54px] items-center justify-start gap-3 rounded-lg border border-slate-200 bg-white px-1 py-1 2xl:w-fit 2xl:grid-cols-[82px_56px]">
                       <button
                         type="button"
                         onClick={() => toggleSystemInfo("desktop", option.value)}
-                        className={`w-[60px] rounded-lg px-2 py-1 text-left text-[11px] font-semibold transition 2xl:w-auto ${
+                        className={`w-[63px] rounded-lg px-2 py-1 text-left text-[11px] font-semibold transition 2xl:w-auto ${
                           checked ? "text-white shadow-sm" : "bg-slate-100 text-slate-800 hover:bg-slate-200"
                         }`}
                         style={checked ? { background: activeButtonBackground } : undefined}
@@ -362,11 +362,11 @@ function WorkItemFields({
 
                   return (
                     <div key={option.value} className="w-32 rounded-lg border border-slate-200 bg-white px-1 py-1 xl:w-[128px] 2xl:w-fit">
-                      <div className="grid grid-cols-[50px_54px] items-center justify-start gap-2 2xl:grid-cols-[82px_56px]">
+                      <div className="grid grid-cols-[50px_54px] items-center justify-start gap-4 2xl:grid-cols-[82px_56px]">
                         <button
                           type="button"
                           onClick={() => toggleSystemInfo("mobile", option.value)}
-                          className={`w-[54px] rounded-lg px-2 py-1 text-left text-[11px] font-semibold transition 2xl:w-auto ${
+                          className={`w-[60px] rounded-lg px-2 py-1 text-left text-[11px] font-semibold transition 2xl:w-auto ${
                             checked ? "text-white shadow-sm" : "bg-slate-100 text-slate-800 hover:bg-slate-200"
                           }`}
                           style={checked ? { background: activeButtonBackground } : undefined}
@@ -379,7 +379,7 @@ function WorkItemFields({
                             value={getSystemInfoVersion("mobile", option.value)}
                             onChange={(event) => updateSystemInfoVersion("mobile", option.value, event.target.value)}
                             placeholder="Versao"
-                            className="input-inline w-[48px] flex-none px-1.5 py-1 text-[11px] 2xl:w-[56px]"
+                            className="input-inline w-[48px] flex-none px-1.5 py-1 text-[11px] v"
                           />
                         ) : <div className="h-[28px]" />}
                       </div>
@@ -390,7 +390,7 @@ function WorkItemFields({
                             value={detailValue}
                             onChange={(event) => updateSystemInfoDetail("mobile", option.value, event.target.value)}
                             placeholder={option.value === "Android" ? "Aparelho" : "Modelo"}
-                            className="input-inline w-[106px]"
+                            className="input-inline w-[114px] 2xl:w-auto"
                           />
                         </div>
                       ) : null}
